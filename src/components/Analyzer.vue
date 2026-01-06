@@ -1,15 +1,23 @@
 <template>
-  <section class="ma-auto w-50">
-    <code class="console">
-      <!-- <DataTable v-if="vtResults" :data="vtResults.last_analysis_results"/> -->
-      {{ vtResults || 1 }}
-    </code>
-  </section>  
+  <section v-if="vtResults" class="ma-auto w-75">
+    <v-card v-for="domain in relatedDomains" :key="domain" class="mb-2">{{ domain }}</v-card>
+    <v-divider class="my-5" />
+    <v-card class="mb-2">{{ vtResults.country }}, {{ vtResults.continent }}</v-card>
+    <v-card class="mb-2">{{ vtResults.network }}</v-card>
+    <v-card class="mb-2">{{ vtResults.whois }}</v-card>
+    <v-card class="mb-2">{{ vtResults.as_owner }}</v-card>
+    <v-card class="mb-2">{{ vtResults.last_https_certificate.subject.O }}</v-card>
+    <v-divider class="my-5" />
+    <div class="d-flex flex-wrap ga-2">
+      <v-chip v-for="engine in vtResults.last_analysis_results" :key="engine"
+        :color="engine.result === 'malicious' ? 'red' : engine.result === 'unrated' ? 'grey' : 'green'">
+        <span>{{ engine.engine_name }}</span>
+      </v-chip>
+    </div>
+  </section>
 </template>
 
 <script>
-import DataTable from './DataTable.vue';
-
 export default {
   name: 'Analyzer',
   data() {
@@ -22,10 +30,6 @@ export default {
       apiKey: '5169c26f0824b80e1872298007b8d5d657cb13789ff38b579ea02029ce836c87'
     };
   },
-  components: {
-    DataTable
-  },
-
   computed: {
     relatedDomains() {
       const cert = this.vtResults?.last_https_certificate?.extensions?.subject_alternative_name || []
@@ -36,9 +40,8 @@ export default {
         domain.includes('.org') ||
         domain.includes('.ar')
       )
-    }
+    },
   },
-
   async mounted() {
 
     const cached = localStorage.getItem('vtResults')
@@ -48,7 +51,6 @@ export default {
     }
     await this.analyzeIP()
   },
-
   methods: {
     async analyzeIP() {
       this.loading = true;
