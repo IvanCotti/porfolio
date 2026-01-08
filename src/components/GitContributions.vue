@@ -182,7 +182,7 @@ export default {
 }
 
 .git-contributions {
-  width: 510x;
+  width: 535px;
   height: fit-content;
   padding: 20px 10px;
   border: solid 1px #3d444d;

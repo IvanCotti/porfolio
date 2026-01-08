@@ -13,6 +13,10 @@
           </h2>
         </header>
 
+        <section class="mb-4">
+          <GitContributions class="ma-auto" />
+        </section>
+
         <v-divider class="mb-12"></v-divider>
 
         <section class="mb-16">
@@ -82,7 +86,7 @@
                   <div class="text-caption text-medium-emphasis mb-3 font-weight-medium text-uppercase tracking-wider">
                     {{ job.period }}
                   </div>
-                  <ul class="pl-4 text-body-1 text-medium-emphasis custom-list">
+                  <ul class="ml-5 pl-4 text-body-1 text-medium-emphasis custom-list">
                     <li v-for="(task, i) in job.tasks" :key="i" class="mb-2">{{ task }}</li>
                   </ul>
                 </v-card-text>
@@ -115,9 +119,7 @@
           </div>
         </section>
 
-
       </v-col>
-      <GitContributions class="ma-auto" />
     </v-row>
 
   </v-container>
@@ -317,7 +319,23 @@ export default {
 }
 </script>
 
-<style scoped>
+<style>
+
+.v-timeline-item:hover .v-timeline-divider__dot{
+  animation: ripple 1.6s 0.4s ease-out infinite;
+}
+.v-timeline-item:hover .v-card-title{
+  color: #2196f3;
+}
+@keyframes ripple {
+  from {
+    box-shadow: 0 0 0 0 #63d2ff73;
+  }
+  to {
+    box-shadow: 0 0 0 22px #63d2ff00;
+  }
+}
+
 .custom-list {
   list-style-type: square;
 }

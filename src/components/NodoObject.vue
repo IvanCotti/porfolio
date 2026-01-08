@@ -78,7 +78,7 @@ export default {
 };
 </script>
 
-<style scoped>
+<style>
 .demo{
   display: flex;
   align-items: center;
