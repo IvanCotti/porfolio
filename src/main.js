@@ -9,7 +9,6 @@ import * as directives from 'vuetify/directives'
 import router from './plugins/router'
 import pinia from './plugins/pinia'
 
-// Iconos Material Design
 import '@mdi/font/css/materialdesignicons.css'
 
 const vuetify = createVuetify({

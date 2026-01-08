@@ -31,11 +31,11 @@ export default {
       loading: false,
       error: null,
       apiKey: '5169c26f0824b80e1872298007b8d5d657cb13789ff38b579ea02029ce836c87',
-      outputBuffer: [],     // All lines waiting to be printed
-      displayedLines: [],   // Lines currently on screen
+      outputBuffer: [],
+      displayedLines: [],
       isTyping: false,
-      typingSpeed: 30,       // ms per char (faster than before for better UX)
-      lineDelay: 300,        // ms between lines
+      typingSpeed: 30,
+      lineDelay: 300,
     };
   },
 
@@ -160,26 +160,11 @@ export default {
     },
 
     async typeLine(htmlContent) {
-      // Simple logic: we push the line fully but maybe we could animate characters if it was plain text.
-      // Since we have HTML spans, animating char by char is tricky without breaking tags.
-      // We will simulate "typing" by adding the line and scrolling.
-      // For a more advanced effect, we could strip tags, animate text, then replace with HTML, 
-      // but line-by-line reveal is also "console-like".
-
-      // Let's try a hybrid: if it has no tags, type it. If it has tags, dump it.
       const hasTags = /<[a-z][\s\S]*>/i.test(htmlContent)
 
       if (hasTags) {
         this.displayedLines.push(htmlContent)
       } else {
-        // Simulate typing for plain text logic could go here, 
-        // but for consistency with the "HTML colored" lines, line-by-line is often cleaner and faster to read.
-        // However, user ASKED for "tipado de a poco".
-        // Let's implement a simple char-by-char for the *last* line if we want, 
-        // BUT doing it on specific array items is reactive.
-
-        // Simplified approach: appear line by line is "typing" of the screen.
-        // If we want char by char:
         let currentLine = ""
         this.displayedLines.push("")
         const index = this.displayedLines.length - 1
@@ -207,13 +192,11 @@ export default {
 </script>
 
 <style scoped>
-/* Font setup handled in App.vue generally, but we enforce it here */
 .analyzer-console {
   background-color: #0c0c0c;
   border: 1px solid #333;
   border-radius: 8px;
   box-shadow: 0 0 20px rgba(0, 255, 0, 0.1);
-  font-family: 'COD', 'Courier New', monospace;
   width: 100%;
   max-width: 800px;
   margin: 20px auto;
@@ -259,15 +242,12 @@ export default {
 .console-body {
   padding: 16px;
   height: 400px;
-  /* Fixed height for scroll */
   overflow-y: auto;
-  color: #00ff00;
-  /* Classic hacker green */
+  color: #ffffff54;
   font-size: 16px;
   line-height: 1.5;
 }
 
-/* Scrollbar styling */
 .console-body::-webkit-scrollbar {
   width: 8px;
 }
@@ -282,12 +262,10 @@ export default {
 }
 
 .console-line {
-  margin-bottom: 4px;
   word-wrap: break-word;
 }
 
 .prompt {
-  color: #00aa00;
   margin-right: 8px;
 }
 

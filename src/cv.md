@@ -66,11 +66,6 @@ Tecnicatura en Programación Informática
 - PHP  
 - C++  
 - Haskell  
-- Experiencia en lenguajes de bajo nivel como Assembler
-
-### Constructores
-- Babel  
-- Vite  
 
 ### Frameworks Frontend
 - Vue.js  
@@ -97,6 +92,7 @@ Tecnicatura en Programación Informática
 ### Bases de Datos
 - MySQL  
 - MariaDB  
+- AWS RDS
 
 ### Gestión de Proyectos
 - Jira  

@@ -1,6 +1,5 @@
 <template>
   <v-app :theme="store.theme">
-    <!-- Navigation Bar -->
     <v-app-bar flat border="b" class="px-md-4" :color="store.theme === 'dark' ? 'black' : 'white'">
       <v-app-bar-title class="font-weight-bold text-uppercase tracking-widest">
         IVÁN ALEJANDRO COTTI
@@ -8,7 +7,6 @@
 
       <v-spacer></v-spacer>
 
-      <!-- Language Toggle -->
       <v-menu location="bottom end">
         <template v-slot:activator="{ props }">
           <v-btn v-bind="props" variant="text" prepend-icon="mdi-web">
@@ -25,12 +23,10 @@
         </v-list>
       </v-menu>
 
-      <!-- Theme Toggle -->
       <v-btn icon @click="store.toggleTheme" class="ml-2">
         <v-icon>{{ store.theme === 'dark' ? 'mdi-weather-sunny' : 'mdi-weather-night' }}</v-icon>
       </v-btn>
 
-      <!-- System Monitor Toggle -->
       <v-divider vertical class="mx-4 my-auto h-50"></v-divider>
 
       <v-btn icon @click="store.toggleAnalyzer" color="default" :active="store.isAnalyzerOpen">
@@ -39,7 +35,6 @@
       </v-btn>
     </v-app-bar>
 
-    <!-- Main Content -->
     <v-main>
       <router-view v-slot="{ Component }">
         <transition name="fade" mode="out-in">
@@ -48,7 +43,6 @@
       </router-view>
     </v-main>
 
-    <!-- Security Analyzer Sidebar -->
     <v-navigation-drawer v-model="store.isAnalyzerOpen" location="right" width="400" temporary
       class="bg-grey-darken-4 custom-drawer">
       <div class="d-flex flex-column h-100 pa-4">
@@ -95,12 +89,21 @@ export default {
 <style>
 /* Global professional overrides */
 :root {
-  --v-font-family: 'Inter', 'Roboto', sans-serif;
+  --header-height: 64px;
+  --color-primary: #2196f3;
+  --color-secondary: #ff9800;
 }
 
-.tracking-widest {
-  letter-spacing: 0.15em;
+@font-face {
+  font-family: 'PrimaryFont';
+  src: url('./assets/fonts/Conduit.otf');
 }
+
+html,
+body {
+  font-family: 'PrimaryFont', sans-serif;
+}
+
 
 /* Transitions */
 .fade-enter-active,

@@ -5,7 +5,7 @@
 
         <!-- Header -->
         <header class="mb-12 text-center text-md-left">
-          <h1 class="text-h2 font-weight-bold text-primary mb-2">
+          <h1 class="text-h3 font-weight-bold text-primary mb-2">
             IVÁN ALEJANDRO COTTI
           </h1>
           <h2 class="text-h5 text-medium-emphasis">
@@ -15,9 +15,8 @@
 
         <v-divider class="mb-12"></v-divider>
 
-        <!-- Information -->
         <section class="mb-16">
-          <h3 class="text-h4 font-weight-bold mb-6 text-primary">{{ t.sections.info }}</h3>
+          <h3 class="text-h5 font-weight-bold mb-6 text-primary">{{ t.sections.info }}</h3>
           <v-row>
             <v-col cols="12" sm="6">
               <div class="d-flex align-center mb-3">
@@ -52,9 +51,23 @@
           </v-row>
         </section>
 
-        <!-- Experience -->
+        <section class="mb-10">
+          <h3 class="text-h5 font-weight-bold mb-6 text-primary">{{ t.sections.education }}</h3>
+          <v-card class="d-flex ga-3 pa-6 border-opacity-25"
+            :class="store.theme === 'dark' ? 'bg-grey-darken-4' : 'bg-grey-lighten-5'">
+            <img src="@/assets/images/unsam-logo.png" alt="Education" style="height: 100px;">
+            <div class="d-flex flex-column flex-md-row justify-center align-md-center">
+              <div>
+                <h2 class="font-weight-bold text-high-emphasis">{{ t.education.institution }}</h2>
+                <h3 class="text-primary font-weight-medium">{{ t.education.degree }}</h3>
+                <div class="text-medium-emphasis">{{ t.education.period }} | {{ t.education.status }}</div>
+              </div>
+            </div>
+          </v-card>
+        </section>
+
         <section class="mb-16">
-          <h3 class="text-h4 font-weight-bold mb-8 text-primary">{{ t.sections.experience }}</h3>
+          <h3 class="text-h5 font-weight-bold mb-8 text-primary">{{ t.sections.experience }}</h3>
 
           <v-timeline side="end" align="start" density="comfortable"
             :line-color="store.theme === 'dark' ? 'grey-darken-2' : 'grey-lighten-2'">
@@ -79,80 +92,92 @@
           </v-timeline>
         </section>
 
-        <!-- Skills -->
         <section class="mb-16">
-          <h3 class="text-h4 font-weight-bold mb-8 text-primary">{{ t.sections.skills }}</h3>
+          <h3 class="text-h5 font-weight-bold mb-8 text-primary">{{ t.sections.skills }}</h3>
 
-          <v-row>
-            <v-col cols="12" md="6" class="mb-6">
-              <h4 class="text-subtitle-1 font-weight-bold text-high-emphasis mb-3">{{ t.skillCategories.languages }}
-              </h4>
-              <div class="d-flex flex-wrap gap-2">
-                <v-chip v-for="skill in skills.languages" :key="skill" color="primary" variant="tonal"
-                  class="mr-2 mb-2 font-weight-medium" label>{{ skill }}</v-chip>
-              </div>
-            </v-col>
-            <v-col cols="12" md="6" class="mb-6">
-              <h4 class="text-subtitle-1 font-weight-bold text-high-emphasis mb-3">{{ t.skillCategories.frameworks }}
-              </h4>
-              <div class="d-flex flex-wrap gap-2">
-                <v-chip v-for="skill in skills.frameworks" :key="skill" color="secondary" variant="tonal"
-                  class="mr-2 mb-2 font-weight-medium" label>{{ skill }}</v-chip>
-              </div>
-            </v-col>
-            <v-col cols="12" md="6" class="mb-6">
-              <h4 class="text-subtitle-1 font-weight-bold text-high-emphasis mb-3">{{ t.skillCategories.infra }}</h4>
-              <div class="d-flex flex-wrap gap-2">
-                <v-chip v-for="skill in skills.infra" :key="skill" color="info" variant="tonal"
-                  class="mr-2 mb-2 font-weight-medium" label>{{ skill }}</v-chip>
-              </div>
-            </v-col>
-            <v-col cols="12" md="6" class="mb-6">
-              <h4 class="text-subtitle-1 font-weight-bold text-high-emphasis mb-3">{{ t.skillCategories.tools }}</h4>
-              <div class="d-flex flex-wrap gap-2">
-                <v-chip v-for="skill in skills.tools" :key="skill" color="success" variant="tonal"
-                  class="mr-2 mb-2 font-weight-medium" label>{{ skill }}</v-chip>
-              </div>
-            </v-col>
-          </v-row>
+          <div v-for="(category, key) in skills" :key="key" class="mb-8">
+            <h4 class="text-h5 font-weight-bold text-high-emphasis mb-4">
+              {{ t.skillCategories[key] }}
+            </h4>
+            <v-row class="ma-n2">
+              <v-col v-for="skill in category" :key="skill.name" cols="6" sm="4" md="3" lg="2" class="pa-2">
+                <v-hover v-slot="{ isHovering, props }">
+                  <v-card v-bind="props" :href="skill.url" target="_blank" rel="noopener noreferrer"
+                    class="d-flex flex-column align-center justify-center py-4 h-100 transition-swing cursor-pointer"
+                    :elevation="isHovering ? 4 : 1" :color="isHovering ? 'primary-lighten-5' : undefined"
+                    :style="{ transform: isHovering ? 'translateY(-5px)' : 'none' }">
+                    <v-img :src="skill.logo" :alt="skill.name" width="48" height="48" class="mb-3" contain></v-img>
+                    <div class="text-subtitle-2 font-weight-bold text-center">{{ skill.name }}</div>
+                  </v-card>
+                </v-hover>
+              </v-col>
+            </v-row>
+          </div>
         </section>
 
-        <!-- Education -->
-        <section class="mb-10">
-          <h3 class="text-h4 font-weight-bold mb-6 text-primary">{{ t.sections.education }}</h3>
-          <v-card variant="outlined" class="pa-6 border-opacity-25"
-            :class="store.theme === 'dark' ? 'bg-grey-darken-4' : 'bg-grey-lighten-5'">
-            <div class="d-flex flex-column flex-md-row justify-space-between align-start align-md-center mb-4">
-              <div>
-                <div class="text-h6 font-weight-bold text-high-emphasis">{{ t.education.institution }}</div>
-                <div class="text-subtitle-1 text-primary font-weight-medium">{{ t.education.degree }}</div>
-              </div>
-              <div class="text-caption text-medium-emphasis font-weight-medium text-uppercase mt-2 mt-md-0">{{
-                t.education.period }}</div>
-            </div>
-            <div class="text-body-2 text-medium-emphasis">{{ t.education.status }}</div>
-          </v-card>
-        </section>
 
       </v-col>
+      <GitContributions class="ma-auto" />
     </v-row>
+
   </v-container>
 </template>
 
 <script>
 import { useAppStore } from '../stores/appStore';
+import GitContributions from '../components/GitContributions.vue';
 
 export default {
   name: "HomeView",
   props: {},
-
+  components: {
+    GitContributions
+  },
   data() {
     return {
       skills: {
-        languages: ['JavaScript', 'TypeScript', 'Python', 'Kotlin', 'PHP', 'C++', 'Haskell', 'Assembler'],
-        frameworks: ['Vue.js', 'React', 'Svelte', 'Astro', 'MUI', 'Vuetify', 'TailwindCSS', 'Bootstrap', 'NodeJS', 'Django', 'CodeIgniter'],
-        infra: ['Netlify', 'Vercel', 'MySQL', 'MariaDB'],
-        tools: ['Jira', 'Trello', 'GitLab', 'GitHub', 'Vite', 'Babel']
+        languages: [
+          { name: 'JavaScript', logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/javascript/javascript-original.svg', url: 'https://developer.mozilla.org/en-US/docs/Web/JavaScript' },
+          { name: 'TypeScript', logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/typescript/typescript-original.svg', url: 'https://www.typescriptlang.org/' },
+          { name: 'Python', logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/python/python-original.svg', url: 'https://www.python.org/' },
+          { name: 'Kotlin', logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/kotlin/kotlin-original.svg', url: 'https://kotlinlang.org/' },
+          { name: 'PHP', logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/php/php-original.svg', url: 'https://www.php.net/' },
+          { name: 'C++', logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/cplusplus/cplusplus-original.svg', url: 'https://isocpp.org/' },
+          { name: 'Haskell', logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/haskell/haskell-original.svg', url: 'https://www.haskell.org/' },
+        ],
+        frameworks: [
+          { name: 'Vue.js', logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/vuejs/vuejs-original.svg', url: 'https://vuejs.org/' },
+          { name: 'React', logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/react/react-original.svg', url: 'https://react.dev/' },
+          { name: 'Svelte', logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/svelte/svelte-original.svg', url: 'https://svelte.dev/' },
+          { name: 'Astro', logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/astro/astro-original.svg', url: 'https://astro.build/' },
+        ],
+        frontend_libs: [
+          { name: 'MUI', logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/materialui/materialui-original.svg', url: 'https://mui.com/' },
+          { name: 'Vuetify', logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/vuetify/vuetify-original.svg', url: 'https://vuetifyjs.com/' },
+          { name: 'TailwindCSS', logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/tailwindcss/tailwindcss-original.svg', url: 'https://tailwindcss.com/' },
+          { name: 'Semantic UI', logo: 'https://raw.githubusercontent.com/Semantic-Org/Semantic-UI-React/master/docs/public/logo.png', url: 'https://semantic-ui.com/' },
+          { name: 'Bootstrap', logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/bootstrap/bootstrap-original.svg', url: 'https://getbootstrap.com/' },
+        ],
+        hosting: [
+          { name: 'Netlify', logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/netlify/netlify-original.svg', url: 'https://www.netlify.com/' },
+          { name: 'Vercel', logo: 'https://assets.vercel.com/image/upload/front/favicon/vercel/180x180.png', url: 'https://vercel.com/' },
+        ],
+        backend: [
+          { name: 'NodeJS', logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/nodejs/nodejs-original.svg', url: 'https://nodejs.org/' },
+          { name: 'Django', logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/django/django-plain.svg', url: 'https://www.djangoproject.com/' },
+          { name: 'CodeIgniter', logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/codeigniter/codeigniter-plain.svg', url: 'https://codeigniter.com/' },
+        ],
+        databases: [
+          { name: 'MySQL', logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/mysql/mysql-original.svg', url: 'https://www.mysql.com/' },
+          { name: 'MariaDB', logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/mariadb/mariadb-original.svg', url: 'https://mariadb.org/' },
+          { name: 'AWS RDS', logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/amazonwebservices/amazonwebservices-original-wordmark.svg', url: 'https://aws.amazon.com/rds/' },
+        ],
+        management: [
+          { name: 'Jira', logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/jira/jira-original.svg', url: 'https://www.atlassian.com/software/jira' },
+          { name: 'Trello', logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/trello/trello-plain.svg', url: 'https://trello.com/' },
+          { name: 'GitLab', logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/gitlab/gitlab-original.svg', url: 'https://about.gitlab.com/' },
+          { name: 'GitHub', logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/github/github-original.svg', url: 'https://github.com/' },
+        ]
       },
       translations: {
         es: {
@@ -165,10 +190,13 @@ export default {
             education: 'Formación Académica'
           },
           skillCategories: {
-            languages: 'Lenguajes de Programación',
-            frameworks: 'Frameworks y Librerías',
-            infra: 'Infraestructura y Bases de Datos',
-            tools: 'Herramientas y Gestión'
+            languages: 'Lenguajes',
+            frameworks: 'Frameworks Frontend',
+            frontend_libs: 'Librerías Frontend',
+            hosting: 'Hosting',
+            backend: 'Frameworks Backend',
+            databases: 'Bases de Datos',
+            management: 'Gestión de Proyectos'
           },
           experience: [
             {
@@ -222,10 +250,13 @@ export default {
             education: 'Academic Background'
           },
           skillCategories: {
-            languages: 'Programming Languages',
-            frameworks: 'Frameworks & Libraries',
-            infra: 'Infrastructure & Databases',
-            tools: 'Tools & Management'
+            languages: 'Languages',
+            frameworks: 'Frontend Frameworks',
+            frontend_libs: 'Frontend Libraries',
+            hosting: 'Hosting',
+            backend: 'Backend Frameworks',
+            databases: 'Databases',
+            management: 'Project Management'
           },
           experience: [
             {
