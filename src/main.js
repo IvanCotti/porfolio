@@ -11,6 +11,45 @@ import pinia from './plugins/pinia'
 
 import '@mdi/font/css/materialdesignicons.css'
 
+// const myCustomDark = {
+//   dark: true,
+//   colors: {
+//     background: '#0f191b',
+//     surface: '#0f191b',
+//     primary: '#f6da91',
+//     secondary: '#4f6862',
+//     tertiary: '#dc422a',
+//   }
+// }
+
+// const myCustomLight = {
+//   dark: false,
+//   colors: {
+//     background: '#FFFFFF',
+//     surface: '#F5F5F5',
+//     primary: '#0d4955ff',
+//     secondary: '#4f6862',
+//     tertiary: '#dc422a',
+//   }
+// }
+
+// const vuetify = createVuetify({
+//   components,
+//   directives,
+//   theme: {
+//     defaultTheme: 'myCustomDark',
+//     themes: {
+//       myCustomDark,
+//       myCustomLight,
+//       light: myCustomLight,
+//       dark: myCustomDark,
+//     }
+//   },
+//   icons: {
+//     defaultSet: 'mdi',
+//   },
+// })
+
 const vuetify = createVuetify({
   components,
   directives,

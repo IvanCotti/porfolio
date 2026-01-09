@@ -177,7 +177,6 @@ export default {
   display: flex;
   flex-direction: column;
   align-items: center;
-  background-color: #0e1116;
   justify-content: center;
 }
 
@@ -191,6 +190,8 @@ export default {
   font-size: 12px;
   font-family: system-ui;
   padding-bottom: 5px;
+  background: #121212;
+  color: white;
 }
 
 .contribute-calendar {

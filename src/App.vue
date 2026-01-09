@@ -27,11 +27,9 @@
         <v-icon>{{ store.theme === 'dark' ? 'mdi-weather-sunny' : 'mdi-weather-night' }}</v-icon>
       </v-btn>
 
-      <v-divider vertical class="mx-4 my-auto h-50"></v-divider>
-
-      <v-btn icon @click="store.toggleAnalyzer" color="default" :active="store.isAnalyzerOpen">
-        <v-icon>mdi-shield-check-outline</v-icon>
-        <v-tooltip activator="parent" location="bottom">System Monitor</v-tooltip>
+      <v-btn icon @click="showAnalyzer = true" class="ml-2">
+        <v-icon>mdi-console</v-icon>
+        <v-tooltip activator="parent" location="bottom">Open Console</v-tooltip>
       </v-btn>
     </v-app-bar>
 
@@ -43,24 +41,16 @@
       </router-view>
     </v-main>
 
-    <v-navigation-drawer v-model="store.isAnalyzerOpen" location="right" width="400" temporary
-      class="bg-grey-darken-4 custom-drawer">
-      <div class="d-flex flex-column h-100 pa-4">
-        <div class="d-flex align-center justify-space-between mb-4">
-          <div class="d-flex align-center">
-            <v-icon color="green" icon="mdi-console" class="mr-2"></v-icon>
-            <span class="text-subtitle-1 font-weight-bold text-green terminal-font">SEC_MONITOR_V2</span>
-          </div>
-          <v-btn icon="mdi-close" size="small" variant="text" color="grey" @click="store.toggleAnalyzer"></v-btn>
-        </div>
+    <!-- Security Analyzer Overlay -->
+    <v-overlay v-model="showAnalyzer" class="align-center justify-center security-overlay" persistent
+      :scrim="store.theme === 'dark' ? 'black' : 'white'" z-index="9000">
+      <SecurityAnalyzer @finished="onAnalyzerFinished" />
+    </v-overlay>
 
-        <v-divider class="mb-4 border-green-op"></v-divider>
-
-        <div class="flex-grow-1 overflow-hidden" style="position: relative;">
-          <SecurityAnalyzer />
-        </div>
-      </div>
-    </v-navigation-drawer>
+    <!-- Global Loader -->
+    <v-overlay :model-value="store.isLoading" class="align-center justify-center" persistent z-index="9999">
+      <v-progress-circular indeterminate size="64" color="primary"></v-progress-circular>
+    </v-overlay>
   </v-app>
 </template>
 
@@ -75,14 +65,23 @@ export default {
     SecurityAnalyzer
   },
   data() {
-    return {};
+    return {
+      showAnalyzer: !sessionStorage.getItem('analyzerSeen')
+    };
   },
   computed: {
     store() {
       return useAppStore();
     }
   },
-  methods: {}
+  methods: {
+    onAnalyzerFinished() {
+      sessionStorage.setItem('analyzerSeen', 'true');
+      setTimeout(() => {
+        this.showAnalyzer = false;
+      }, 1500); // 1.5s delay after completion to read final message
+    }
+  }
 };
 </script>
 
@@ -90,8 +89,10 @@ export default {
 /* Global professional overrides */
 :root {
   --header-height: 64px;
-  --color-primary: #2196f3;
-  --color-secondary: #ff9800;
+  --color-primary: #f6da91;
+  --color-secondary: #4f6862;
+  --color-tertiary: #dc422a;
+  --color-background: #0f191b;
 }
 
 @font-face {
@@ -104,8 +105,6 @@ body {
   font-family: 'PrimaryFont', sans-serif;
 }
 
-
-/* Transitions */
 .fade-enter-active,
 .fade-leave-active {
   transition: opacity 0.3s ease;
@@ -116,17 +115,35 @@ body {
   opacity: 0;
 }
 
-/* Drawer Specifics */
 .custom-drawer {
   border-left: 1px solid #333 !important;
 }
 
-/* Utility to keep terminal font just for the analyzer label if needed */
-.terminal-font {
-  font-family: 'Courier New', Courier, monospace !important;
+.v-application {
+  background-color: rgb(var(--v-theme-surface));
+  background-image:
+    radial-gradient(circle at 100% 100%, #1a1a1a 0, #1a1a1a 8px, transparent 8px),
+    radial-gradient(circle at 0 0, #1a1a1a 0, #1a1a1a 8px, transparent 8px) !important;
+  background-size: 40px 40px;
+  background-attachment: fixed;
 }
 
-.border-green-op {
-  border-color: rgba(0, 255, 0, 0.2) !important;
+.v-theme--light .v-application {
+  background-image:
+    radial-gradient(circle at 100% 100%, #e0e0e0 0, #e0e0e0 8px, transparent 8px),
+    radial-gradient(circle at 0 0, #e0e0e0 0, #e0e0e0 8px, transparent 8px) !important;
+}
+
+.security-overlay .v-overlay__content {
+  width: 90%;
+  max-width: 800px;
+}
+
+.v-application,
+.v-application .v-theme--dark,
+.v-application .v-theme--light,
+.v-main,
+.v-app-bar {
+  transition: background-color 0.3s ease, color 0.3s ease !important;
 }
 </style>

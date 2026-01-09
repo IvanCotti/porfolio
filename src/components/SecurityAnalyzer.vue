@@ -4,7 +4,7 @@
       <span class="dot red"></span>
       <span class="dot yellow"></span>
       <span class="dot green"></span>
-      <span class="title">SECURE_TERMINAL_V1.0</span>
+      <span class="title">Terminal</span>
     </div>
     <div class="console-body" ref="consoleBody">
       <div v-for="(line, index) in displayedLines" :key="index" class="console-line">
@@ -23,6 +23,7 @@
 export default {
   name: "SecurityAnalyzer",
   props: {},
+  emits: ['finished'],
 
   data() {
     return {
@@ -30,7 +31,7 @@ export default {
       vtResults: null,
       loading: false,
       error: null,
-      apiKey: '5169c26f0824b80e1872298007b8d5d657cb13789ff38b579ea02029ce836c87',
+      apiKey: import.meta.env.VITE_VIRUSTOTAL_API_KEY,
       outputBuffer: [],
       displayedLines: [],
       isTyping: false,
@@ -39,18 +40,7 @@ export default {
     };
   },
 
-  computed: {
-    relatedDomains() {
-      const cert = this.vtResults?.last_https_certificate?.extensions?.subject_alternative_name || []
-      return cert.filter(domain =>
-        domain.includes('.gov') ||
-        domain.includes('.mil') ||
-        domain.includes('.edu') ||
-        domain.includes('.org') ||
-        domain.includes('.ar')
-      )
-    },
-  },
+  computed: {},
   async mounted() {
     const cached = localStorage.getItem('vtResults')
     if (cached) {
@@ -75,28 +65,61 @@ export default {
         this.queueMessage(`Target Identified: ${this.ipAddress}`, "success")
 
         this.queueMessage("Querying VirusTotal Database...", "system")
-        // Analizar con VirusTotal
-        const vtResponse = await fetch(
-          `https://www.virustotal.com/api/v3/ip_addresses/${this.ipAddress}`,
-          {
-            headers: {
-              'x-apikey': this.apiKey
-            }
-          }
-        );
 
-        if (!vtResponse.ok) {
-          throw new Error('Error al consultar VirusTotal');
+        const headers = { 'x-apikey': this.apiKey }
+
+        const [reportRes, resolutionsRes] = await Promise.all([
+          fetch(`https://www.virustotal.com/api/v3/ip_addresses/${this.ipAddress}`, { headers }),
+          fetch(`https://www.virustotal.com/api/v3/ip_addresses/${this.ipAddress}/resolutions?limit=10`, { headers })
+        ])
+
+        if (!reportRes.ok) throw new Error('Error querying VirusTotal Report');
+
+        const reportData = await reportRes.json();
+        const attrs = reportData.data.attributes || {};
+
+        // Filter malicious results (exclude undetected)
+        const maliciousResults = {};
+        if (attrs.last_analysis_results) {
+          Object.entries(attrs.last_analysis_results).forEach(([engine, result]) => {
+            if (result.category !== 'undetected') {
+              maliciousResults[engine] = result;
+            }
+          });
         }
 
-        const vtData = await vtResponse.json();
-        this.vtResults = vtData.data.attributes;
+        // Process Resolutions
+        let processedResolutions = null;
+        if (resolutionsRes.ok) {
+          const resolutionsData = await resolutionsRes.json();
+          if (resolutionsData.data && resolutionsData.data.length > 0) {
+            processedResolutions = resolutionsData.data.map(item => ({
+              id: item.id || null,
+              ip_address_last_analysis_stats: item.attributes?.ip_address_last_analysis_stats || null,
+              resolver: item.attributes?.resolver || null,
+              host_name: item.attributes?.host_name || null
+            }));
+          }
+        }
+
+        // Construct Final Object
+        this.vtResults = {
+          as_owner: attrs.as_owner || null,
+          network: attrs.network || null,
+          regional_internet_registry: attrs.regional_internet_registry || null,
+          continent: attrs.continent || null,
+          country: attrs.country || null,
+          malicious_results: Object.keys(maliciousResults).length > 0 ? maliciousResults : null,
+          resolutions: processedResolutions
+        };
+
         localStorage.setItem('vtResults', JSON.stringify(this.vtResults))
 
         this.queueAnalysisOutput()
 
       } catch (err) {
         this.queueMessage(`ERROR: ${err.message}`, "error")
+        console.error(err)
       } finally {
         this.loading = false;
       }
@@ -106,30 +129,54 @@ export default {
       this.queueMessage("--- ANALYSIS REPORT ---", "header")
 
       if (this.vtResults) {
-        this.queueMessage(`Location: [${this.vtResults.country}, ${this.vtResults.continent}]`)
-        this.queueMessage(`Network: ${this.vtResults.network}`)
-        this.queueMessage(`AS Owner: ${this.vtResults.as_owner}`)
-
-        if (this.vtResults.last_https_certificate?.subject?.O) {
-          this.queueMessage(`Cert Organization: ${this.vtResults.last_https_certificate.subject.O}`)
-        }
-
-        if (this.relatedDomains.length > 0) {
-          this.queueMessage("--- RELATED DOMAINS ---", "header")
-          this.relatedDomains.forEach(d => this.queueMessage(`  - ${d}`))
-        }
-
-        this.queueMessage("--- THREAT INTELLIGENCE ---", "header")
-        const stats = this.vtResults.last_analysis_stats
-        if (stats) {
-          this.queueMessage(`Malicious: ${stats.malicious}`, stats.malicious > 0 ? "error" : "success")
-          this.queueMessage(`Suspicious: ${stats.suspicious}`, stats.suspicious > 0 ? "warning" : "success")
-          this.queueMessage(`Harmless: ${stats.harmless}`, "success")
+        for (const [key, value] of Object.entries(this.vtResults)) {
+          if (key === 'malicious_results') {
+            if (value) {
+              this.queueMessage("--- DETECTED THREATS ---", "header")
+              Object.entries(value).forEach(([engine, result]) => {
+                const status = result.category === 'malicious' ? 'error' : 'warning';
+                this.queueMessage(`[${engine}]: ${result.result} (${result.category})`, status)
+              });
+            } else {
+              this.queueMessage("No malicious results detected.", "success")
+            }
+          } else if (key === 'resolutions') {
+            if (value) {
+              this.queueMessage("--- RESOLUTIONS ---", "header")
+              value.forEach((res, index) => {
+                this.queueMessage(`[Resolution #${index + 1}]`, "header")
+                Object.entries(res).forEach(([rKey, rVal]) => {
+                  if (rVal && typeof rVal === 'object') {
+                    this.queueMessage(`   ${rKey}: ${this.formatObjectInline(rVal)}`)
+                  } else {
+                    this.queueMessage(`   ${rKey}: ${rVal || 'null'}`)
+                  }
+                })
+              })
+            } else {
+              this.queueMessage("Resolutions: null", "system")
+            }
+          } else {
+            // Primitive values
+            if (value && typeof value === 'object') {
+              this.queueMessage(`${key}: ${this.formatObjectInline(value)}`)
+            } else {
+              const displayValue = value === null ? 'null' : value;
+              this.queueMessage(`${key}: ${displayValue}`)
+            }
+          }
         }
       }
 
       this.queueMessage("--- END OF REPORT ---", "system")
       this.processQueue();
+    },
+
+    formatObjectInline(obj) {
+      if (!obj) return 'null'
+      return Object.entries(obj)
+        .map(([k, v]) => `${k}: ${v}`)
+        .join(', ')
     },
 
     queueMessage(text, type = "info") {
@@ -157,6 +204,7 @@ export default {
       }
 
       this.isTyping = false
+      this.$emit('finished')
     },
 
     async typeLine(htmlContent) {

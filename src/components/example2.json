@@ -1,0 +1,282 @@
+{
+  "data": [
+    {
+      "id": "1.1.1.1ecoenergyh.info",
+      "type": "resolution",
+      "links": {
+        "self": "https://www.virustotal.com/api/v3/resolutions/1.1.1.1ecoenergyh.info"
+      },
+      "attributes": {
+        "ip_address_last_analysis_stats": {
+          "malicious": 0,
+          "suspicious": 0,
+          "undetected": 30,
+          "harmless": 64,
+          "timeout": 0
+        },
+        "date": 1767935595,
+        "host_name_last_analysis_stats": {
+          "malicious": 11,
+          "suspicious": 2,
+          "undetected": 28,
+          "harmless": 53,
+          "timeout": 0
+        },
+        "resolver": "Georgia Institute of Technology",
+        "host_name": "ecoenergyh.info",
+        "ip_address": "1.1.1.1"
+      }
+    },
+    {
+      "id": "1.1.1.1dns7.myserverdns.top",
+      "type": "resolution",
+      "links": {
+        "self": "https://www.virustotal.com/api/v3/resolutions/1.1.1.1dns7.myserverdns.top"
+      },
+      "attributes": {
+        "ip_address_last_analysis_stats": {
+          "malicious": 0,
+          "suspicious": 0,
+          "undetected": 30,
+          "harmless": 64,
+          "timeout": 0
+        },
+        "date": 1767934272,
+        "host_name_last_analysis_stats": {
+          "malicious": 0,
+          "suspicious": 0,
+          "undetected": 94,
+          "harmless": 0,
+          "timeout": 0
+        },
+        "resolver": "VirusTotal",
+        "host_name": "dns7.myserverdns.top",
+        "ip_address": "1.1.1.1"
+      }
+    },
+    {
+      "id": "1.1.1.1depoclub.hu",
+      "type": "resolution",
+      "links": {
+        "self": "https://www.virustotal.com/api/v3/resolutions/1.1.1.1depoclub.hu"
+      },
+      "attributes": {
+        "ip_address_last_analysis_stats": {
+          "malicious": 0,
+          "suspicious": 0,
+          "undetected": 30,
+          "harmless": 64,
+          "timeout": 0
+        },
+        "date": 1767933426,
+        "host_name_last_analysis_stats": {
+          "malicious": 0,
+          "suspicious": 0,
+          "undetected": 94,
+          "harmless": 0,
+          "timeout": 0
+        },
+        "resolver": "VirusTotal",
+        "host_name": "depoclub.hu",
+        "ip_address": "1.1.1.1"
+      }
+    },
+    {
+      "id": "1.1.1.1pixelperfect.gg",
+      "type": "resolution",
+      "links": {
+        "self": "https://www.virustotal.com/api/v3/resolutions/1.1.1.1pixelperfect.gg"
+      },
+      "attributes": {
+        "ip_address_last_analysis_stats": {
+          "malicious": 0,
+          "suspicious": 0,
+          "undetected": 30,
+          "harmless": 64,
+          "timeout": 0
+        },
+        "date": 1767932365,
+        "host_name_last_analysis_stats": {
+          "malicious": 0,
+          "suspicious": 0,
+          "undetected": 32,
+          "harmless": 62,
+          "timeout": 0
+        },
+        "resolver": "Georgia Institute of Technology",
+        "host_name": "pixelperfect.gg",
+        "ip_address": "1.1.1.1"
+      }
+    },
+    {
+      "id": "1.1.1.1cryptoguideh.info",
+      "type": "resolution",
+      "links": {
+        "self": "https://www.virustotal.com/api/v3/resolutions/1.1.1.1cryptoguideh.info"
+      },
+      "attributes": {
+        "ip_address_last_analysis_stats": {
+          "malicious": 0,
+          "suspicious": 0,
+          "undetected": 30,
+          "harmless": 64,
+          "timeout": 0
+        },
+        "date": 1767931186,
+        "host_name_last_analysis_stats": {
+          "malicious": 10,
+          "suspicious": 2,
+          "undetected": 31,
+          "harmless": 51,
+          "timeout": 0
+        },
+        "resolver": "Georgia Institute of Technology",
+        "host_name": "cryptoguideh.info",
+        "ip_address": "1.1.1.1"
+      }
+    },
+    {
+      "id": "1.1.1.1senheguang.com",
+      "type": "resolution",
+      "links": {
+        "self": "https://www.virustotal.com/api/v3/resolutions/1.1.1.1senheguang.com"
+      },
+      "attributes": {
+        "ip_address_last_analysis_stats": {
+          "malicious": 0,
+          "suspicious": 0,
+          "undetected": 30,
+          "harmless": 64,
+          "timeout": 0
+        },
+        "date": 1767930612,
+        "host_name_last_analysis_stats": {
+          "malicious": 0,
+          "suspicious": 0,
+          "undetected": 94,
+          "harmless": 0,
+          "timeout": 0
+        },
+        "resolver": "VirusTotal",
+        "host_name": "senheguang.com",
+        "ip_address": "1.1.1.1"
+      }
+    },
+    {
+      "id": "1.1.1.1medicareh.info",
+      "type": "resolution",
+      "links": {
+        "self": "https://www.virustotal.com/api/v3/resolutions/1.1.1.1medicareh.info"
+      },
+      "attributes": {
+        "ip_address_last_analysis_stats": {
+          "malicious": 0,
+          "suspicious": 0,
+          "undetected": 30,
+          "harmless": 64,
+          "timeout": 0
+        },
+        "date": 1767930527,
+        "host_name_last_analysis_stats": {
+          "malicious": 0,
+          "suspicious": 0,
+          "undetected": 94,
+          "harmless": 0,
+          "timeout": 0
+        },
+        "resolver": "Georgia Institute of Technology",
+        "host_name": "medicareh.info",
+        "ip_address": "1.1.1.1"
+      }
+    },
+    {
+      "id": "1.1.1.1kvantumugras.com",
+      "type": "resolution",
+      "links": {
+        "self": "https://www.virustotal.com/api/v3/resolutions/1.1.1.1kvantumugras.com"
+      },
+      "attributes": {
+        "ip_address_last_analysis_stats": {
+          "malicious": 0,
+          "suspicious": 0,
+          "undetected": 30,
+          "harmless": 64,
+          "timeout": 0
+        },
+        "date": 1767930028,
+        "host_name_last_analysis_stats": {
+          "malicious": 0,
+          "suspicious": 0,
+          "undetected": 94,
+          "harmless": 0,
+          "timeout": 0
+        },
+        "resolver": "VirusTotal",
+        "host_name": "kvantumugras.com",
+        "ip_address": "1.1.1.1"
+      }
+    },
+    {
+      "id": "1.1.1.1lev-bazz10.ru",
+      "type": "resolution",
+      "links": {
+        "self": "https://www.virustotal.com/api/v3/resolutions/1.1.1.1lev-bazz10.ru"
+      },
+      "attributes": {
+        "ip_address_last_analysis_stats": {
+          "malicious": 0,
+          "suspicious": 0,
+          "undetected": 30,
+          "harmless": 64,
+          "timeout": 0
+        },
+        "date": 1767929001,
+        "host_name_last_analysis_stats": {
+          "malicious": 0,
+          "suspicious": 0,
+          "undetected": 32,
+          "harmless": 62,
+          "timeout": 0
+        },
+        "resolver": "VirusTotal",
+        "host_name": "lev-bazz10.ru",
+        "ip_address": "1.1.1.1"
+      }
+    },
+    {
+      "id": "1.1.1.1readdy-ai.link",
+      "type": "resolution",
+      "links": {
+        "self": "https://www.virustotal.com/api/v3/resolutions/1.1.1.1readdy-ai.link"
+      },
+      "attributes": {
+        "ip_address_last_analysis_stats": {
+          "malicious": 0,
+          "suspicious": 0,
+          "undetected": 30,
+          "harmless": 64,
+          "timeout": 0
+        },
+        "date": 1767927933,
+        "host_name_last_analysis_stats": {
+          "malicious": 0,
+          "suspicious": 1,
+          "undetected": 33,
+          "harmless": 60,
+          "timeout": 0
+        },
+        "resolver": "Georgia Institute of Technology",
+        "host_name": "readdy-ai.link",
+        "ip_address": "1.1.1.1"
+      }
+    }
+  ],
+  "meta": {
+    "count": 200,
+    "cursor": "ClMKEQoEZGF0ZRIJCLWO1OO8_ZEDEjpqEXN-dmlydXN0b3RhbGNsb3VkciULEgpSZXNvbHV0aW9uIhUxLjEuMS4xcmVhZGR5LWFpLmxpbmsMGAAgAQ=="
+  },
+  "links": {
+    "self": "https://www.virustotal.com/api/v3/ip_addresses/1.1.1.1/resolutions?limit=10",
+    "next": "https://www.virustotal.com/api/v3/ip_addresses/1.1.1.1/resolutions?limit=10&cursor=ClMKEQoEZGF0ZRIJCLWO1OO8_ZEDEjpqEXN-dmlydXN0b3RhbGNsb3VkciULEgpSZXNvbHV0aW9uIhUxLjEuMS4xcmVhZGR5LWFpLmxpbmsMGAAgAQ%3D%3D"
+  }
+}

@@ -4,7 +4,10 @@
       <v-col cols="12" md="10" lg="8" class="mx-auto">
 
         <!-- Header -->
-        <header class="mb-12 text-center text-md-left">
+        <header class="mb-12 d-flex flex-column align-center fade-section">
+          <v-avatar size="128" class="mb-4">
+            <v-icon icon="mdi-account-circle" size="128" color="primary"></v-icon>
+          </v-avatar>
           <h1 class="text-h3 font-weight-bold text-primary mb-2">
             IVÁN ALEJANDRO COTTI
           </h1>
@@ -13,13 +16,13 @@
           </h2>
         </header>
 
-        <section class="mb-4">
+        <section class="mb-4 fade-section">
           <GitContributions class="ma-auto" />
         </section>
 
         <v-divider class="mb-12"></v-divider>
 
-        <section class="mb-16">
+        <section class="mb-16 fade-section">
           <h3 class="text-h5 font-weight-bold mb-6 text-primary">{{ t.sections.info }}</h3>
           <v-row>
             <v-col cols="12" sm="6">
@@ -55,7 +58,7 @@
           </v-row>
         </section>
 
-        <section class="mb-10">
+        <section class="mb-10 fade-section">
           <h3 class="text-h5 font-weight-bold mb-6 text-primary">{{ t.sections.education }}</h3>
           <v-card class="d-flex ga-3 pa-6 border-opacity-25"
             :class="store.theme === 'dark' ? 'bg-grey-darken-4' : 'bg-grey-lighten-5'">
@@ -70,7 +73,7 @@
           </v-card>
         </section>
 
-        <section class="mb-16">
+        <section class="mb-16 fade-section">
           <h3 class="text-h5 font-weight-bold mb-8 text-primary">{{ t.sections.experience }}</h3>
 
           <v-timeline side="end" align="start" density="comfortable"
@@ -96,7 +99,7 @@
           </v-timeline>
         </section>
 
-        <section class="mb-16">
+        <section class="skills mb-16 fade-section">
           <h3 class="text-h5 font-weight-bold mb-8 text-primary">{{ t.sections.skills }}</h3>
 
           <div v-for="(category, key) in skills" :key="key" class="mb-8">
@@ -105,15 +108,11 @@
             </h4>
             <v-row class="ma-n2">
               <v-col v-for="skill in category" :key="skill.name" cols="6" sm="4" md="3" lg="2" class="pa-2">
-                <v-hover v-slot="{ isHovering, props }">
-                  <v-card v-bind="props" :href="skill.url" target="_blank" rel="noopener noreferrer"
-                    class="d-flex flex-column align-center justify-center py-4 h-100 transition-swing cursor-pointer"
-                    :elevation="isHovering ? 4 : 1" :color="isHovering ? 'primary-lighten-5' : undefined"
-                    :style="{ transform: isHovering ? 'translateY(-5px)' : 'none' }">
-                    <v-img :src="skill.logo" :alt="skill.name" width="48" height="48" class="mb-3" contain></v-img>
-                    <div class="text-subtitle-2 font-weight-bold text-center">{{ skill.name }}</div>
-                  </v-card>
-                </v-hover>
+                <v-card :href="skill.url" target="_blank" rel="noopener noreferrer"
+                  class="d-flex flex-column align-center justify-center py-4 h-100 transition-swing cursor-pointer">
+                  <v-img :src="skill.logo" :alt="skill.name" width="48" height="48" class="mb-3" contain></v-img>
+                  <div class="text-subtitle-2 font-weight-bold text-center">{{ skill.name }}</div>
+                </v-card>
               </v-col>
             </v-row>
           </div>
@@ -179,6 +178,12 @@ export default {
           { name: 'Trello', logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/trello/trello-plain.svg', url: 'https://trello.com/' },
           { name: 'GitLab', logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/gitlab/gitlab-original.svg', url: 'https://about.gitlab.com/' },
           { name: 'GitHub', logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/github/github-original.svg', url: 'https://github.com/' },
+        ],
+        tools: [
+          { name: 'Docker', logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/docker/docker-original.svg', url: 'https://www.docker.com/' },
+          { name: 'Docker Compose', logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/docker/docker-original.svg', url: 'https://docs.docker.com/compose/' },
+          { name: 'Sonarqube', logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/sonarqube/sonarqube-original.svg', url: 'https://www.sonarqube.org/' },
+          { name: 'Postman', logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/postman/postman-original.svg', url: 'https://www.postman.com/' },
         ]
       },
       translations: {
@@ -198,7 +203,8 @@ export default {
             hosting: 'Hosting',
             backend: 'Frameworks Backend',
             databases: 'Bases de Datos',
-            management: 'Gestión de Proyectos'
+            management: 'Gestión de Proyectos',
+            tools: 'DevOps & Herramientas'
           },
           experience: [
             {
@@ -258,7 +264,8 @@ export default {
             hosting: 'Hosting',
             backend: 'Backend Frameworks',
             databases: 'Databases',
-            management: 'Project Management'
+            management: 'Project Management',
+            tools: 'DevOps & Tools'
           },
           experience: [
             {
@@ -315,22 +322,41 @@ export default {
     }
   },
 
+  mounted() {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, {
+      threshold: 0.1
+    });
+
+    const sections = document.querySelectorAll('.fade-section');
+    sections.forEach(section => {
+      observer.observe(section);
+    });
+  },
   methods: {}
 }
 </script>
 
 <style>
-
-.v-timeline-item:hover .v-timeline-divider__dot{
+.v-timeline-item:hover .v-timeline-divider__dot {
   animation: ripple 1.6s 0.4s ease-out infinite;
 }
-.v-timeline-item:hover .v-card-title{
-  color: #2196f3;
+
+.v-timeline-item:hover .v-card-title {
+  color: var(--color-primary);
 }
+
 @keyframes ripple {
   from {
-    box-shadow: 0 0 0 0 #63d2ff73;
+    box-shadow: 0 0 0 0 var(--color-primary);
   }
+
   to {
     box-shadow: 0 0 0 22px #63d2ff00;
   }
@@ -346,5 +372,42 @@ export default {
 
 .tracking-wider {
   letter-spacing: 0.1em;
+}
+
+.skills .v-card {
+  transition: all 0.3s ease;
+  border: 5px solid transparent;
+}
+
+.skills .v-card .v-img {
+  transition: all 0.3s ease;
+}
+
+.skills .v-card:hover .v-img {
+  transform: scale(1.4);
+}
+
+.skills .v-card:not(.v-theme--light):hover {
+  border-image: radial-gradient(transparent 90%, #d1b529 10%) 1;
+  background: radial-gradient(#7f53016e, #291b0250);
+  color: #d1b529;
+}
+
+.skills .v-card.v-theme--light:hover {
+  border-image: radial-gradient(transparent 90%, #2956d1 10%) 1;
+  background: radial-gradient(#ffffff50, #01467f6e);
+  color: #2956d1;
+}
+
+.fade-section {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+  will-change: opacity, transform;
+}
+
+.fade-section.visible {
+  opacity: 1;
+  transform: translateY(0);
 }
 </style>
