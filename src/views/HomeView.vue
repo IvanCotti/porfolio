@@ -344,12 +344,18 @@ export default {
 </script>
 
 <style>
+.v-timeline-divider__dot,
+.v-timeline-item__body {
+  transition: all 0.3s ease;
+}
+
 .v-timeline-item:hover .v-timeline-divider__dot {
+  transform: scale(1.5);
   animation: ripple 1.6s 0.4s ease-out infinite;
 }
 
-.v-timeline-item:hover .v-card-title {
-  color: var(--color-primary);
+.v-timeline-item:hover .v-timeline-item__body {
+  transform: translateX(1em);
 }
 
 @keyframes ripple {

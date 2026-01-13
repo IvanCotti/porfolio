@@ -115,24 +115,16 @@ body {
   opacity: 0;
 }
 
-.custom-drawer {
-  border-left: 1px solid #333 !important;
-}
-
 .v-application {
-  background-color: rgb(var(--v-theme-surface));
-  background-image:
-    radial-gradient(circle at 100% 100%, #1a1a1a 0, #1a1a1a 8px, transparent 8px),
-    radial-gradient(circle at 0 0, #1a1a1a 0, #1a1a1a 8px, transparent 8px) !important;
+  /* background:
+    radial-gradient(circle at 20% 30%, #76f65c26 0%, transparent 50%),
+    radial-gradient(circle at 80% 70%, #48ec9a26 0%, transparent 50%),
+    radial-gradient(circle at 50% 50%, #06b6d41a 0%, transparent 50%) ! important; */
+  background-color: var(--v-theme-surface);
   background-size: 40px 40px;
   background-attachment: fixed;
 }
 
-.v-theme--light .v-application {
-  background-image:
-    radial-gradient(circle at 100% 100%, #e0e0e0 0, #e0e0e0 8px, transparent 8px),
-    radial-gradient(circle at 0 0, #e0e0e0 0, #e0e0e0 8px, transparent 8px) !important;
-}
 
 .security-overlay .v-overlay__content {
   width: 90%;

@@ -1,25 +1,36 @@
 <template>
-  <div class="analyzer-console">
-    <div class="console-header">
-      <span class="dot red"></span>
-      <span class="dot yellow"></span>
-      <span class="dot green"></span>
-      <span class="title">Terminal</span>
-    </div>
-    <div class="console-body" ref="consoleBody">
-      <div v-for="(line, index) in displayedLines" :key="index" class="console-line">
-        <span class="prompt">> </span>
-        <span v-html="line"></span>
+  <div class="analyzer-container">
+    <div class="analyzer-console">
+      <div class="console-header">
+        <span class="dot red"></span>
+        <span class="dot yellow"></span>
+        <span class="dot green"></span>
+        <span class="title">Terminal</span>
       </div>
-      <div class="console-line active-line">
-        <span class="prompt">> </span>
-        <span class="cursor">_</span>
+      <div class="console-body" ref="consoleBody">
+        <div v-for="(line, index) in displayedLines" :key="index" class="console-line">
+          <span class="prompt">> </span>
+          <span v-html="line"></span>
+        </div>
+        <div class="console-line active-line">
+          <span class="prompt">> </span>
+          <span class="cursor">_</span>
+        </div>
+      </div>
+    </div>
+    <div class="analyzer-map-container" :class="{ visible: showMap }">
+      <div id="map" class="map-view"></div>
+      <div v-if="!showMap" class="map-placeholder">
+        <span class="text-grey">Map System Offline...</span>
       </div>
     </div>
   </div>
 </template>
 
 <script>
+import maplibregl from 'maplibre-gl';
+import 'maplibre-gl/dist/maplibre-gl.css';
+
 export default {
   name: "SecurityAnalyzer",
   props: {},
@@ -37,6 +48,10 @@ export default {
       isTyping: false,
       typingSpeed: 30,
       lineDelay: 300,
+      latitude: null,
+      longitude: null,
+      showMap: false,
+      map: null,
     };
   },
 
@@ -46,7 +61,18 @@ export default {
     if (cached) {
       this.vtResults = JSON.parse(cached)
       this.ipAddress = localStorage.getItem('ipAddress') || 'UNKNOWN'
-      this.queueAnalysisOutput()
+      this.latitude = localStorage.getItem('latitude')
+      this.longitude = localStorage.getItem('longitude')
+
+      if (!this.latitude || !this.longitude) {
+        // Legacy cache without location data, clear and re-fetch
+        localStorage.removeItem('vtResults')
+        this.vtResults = null
+        this.queueMessage("Updating system protocols...", "system")
+        await this.analyzeIP()
+      } else {
+        this.queueAnalysisOutput()
+      }
     } else {
       this.queueMessage("Initializing secure connection...", "system")
       await this.analyzeIP()
@@ -58,11 +84,21 @@ export default {
       this.queueMessage("Fetching IP address...", "system")
 
       try {
-        const ipResponse = await fetch('https://api.ipify.org?format=json');
+        const ipResponse = await fetch('https://ipapi.co/json/');
+        if (!ipResponse.ok) throw new Error('Failed to fetch IP data');
         const ipData = await ipResponse.json();
+
         this.ipAddress = ipData.ip;
+        this.latitude = ipData.latitude;
+        this.longitude = ipData.longitude;
+
         localStorage.setItem('ipAddress', this.ipAddress)
+        localStorage.setItem('latitude', this.latitude)
+        localStorage.setItem('longitude', this.longitude)
         this.queueMessage(`Target Identified: ${this.ipAddress}`, "success")
+        if (ipData.country_name) {
+          this.queueMessage(`Location Trace: ${ipData.city}, ${ipData.country_name}`, "warning")
+        }
 
         this.queueMessage("Querying VirusTotal Database...", "system")
 
@@ -157,19 +193,51 @@ export default {
               this.queueMessage("Resolutions: null", "system")
             }
           } else {
-            // Primitive values
-            if (value && typeof value === 'object') {
-              this.queueMessage(`${key}: ${this.formatObjectInline(value)}`)
-            } else {
-              const displayValue = value === null ? 'null' : value;
-              this.queueMessage(`${key}: ${displayValue}`)
-            }
           }
+        }
+
+        // Trigger Map if location is available
+        if (this.vtResults && this.vtResults.country) {
+          // We can trigger it here or after specific lines.
+          // Let's trigger it after a short delay or when the report is somewhat populated
         }
       }
 
       this.queueMessage("--- END OF REPORT ---", "system")
       this.processQueue();
+    },
+
+    initMap() {
+      if (!this.latitude || !this.longitude) return;
+      if (this.map) return;
+
+      this.showMap = true;
+
+      this.$nextTick(() => {
+        this.map = new maplibregl.Map({
+          container: 'map',
+          style: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json', // Dark theme
+          center: [this.longitude, this.latitude],
+          zoom: 2, // Start zoomed out
+          attributionControl: false
+        });
+
+        this.map.on('load', () => {
+          // Fly to location
+          this.map.flyTo({
+            center: [this.longitude, this.latitude],
+            zoom: 5,
+            speed: 1.2
+          });
+
+          const el = document.createElement('div');
+          el.className = 'map-marker';
+
+          new maplibregl.Marker(el)
+            .setLngLat([this.longitude, this.latitude])
+            .addTo(this.map);
+        });
+      });
     },
 
     formatObjectInline(obj) {
@@ -188,6 +256,18 @@ export default {
       if (type === 'system') formattedText = `<span class="text-grey">${text}</span>`
 
       this.outputBuffer.push(formattedText)
+
+      // Check for triggers to open map
+      if (text.toLowerCase().includes('country') || text.toLowerCase().includes('location trace')) {
+        // Queue the map open action? No, better to do it cleanly.
+        // We'll set a flag to open it after this line is typed?
+        // Actually, let's just trigger it immediately but the 'visible' class handles the fade in.
+        // Better: Add a special "command" to the queue or check in typeLine.
+        // Simplest: Check in analyzeIP or just call initMap() but it needs to happen in sync with typing?
+        // The user said "Cuando se muestre el pais y continente... se abra un mapa".
+        // So it should happen when that line is displayed.
+      }
+
       if (!this.isTyping && this.outputBuffer.length === 1) { // Start if not already running
         this.processQueue()
       }
@@ -204,10 +284,15 @@ export default {
       }
 
       this.isTyping = false
-      this.$emit('finished')
+      // this.$emit('finished')
     },
 
     async typeLine(htmlContent) {
+      // Check if this line contains Country/Continent info to trigger map
+      if (htmlContent.includes('country') || htmlContent.includes('Location Trace')) {
+        this.initMap();
+      }
+
       const hasTags = /<[a-z][\s\S]*>/i.test(htmlContent)
 
       if (hasTags) {
@@ -246,11 +331,83 @@ export default {
   border-radius: 8px;
   box-shadow: 0 0 20px rgba(0, 255, 0, 0.1);
   width: 100%;
-  max-width: 800px;
-  margin: 20px auto;
-  overflow: hidden;
+  flex: 1;
+  /* Take available space */
   display: flex;
   flex-direction: column;
+  transition: all 0.5s ease;
+}
+
+.analyzer-container {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  max-width: 1200px;
+  /* Increased max-width */
+  margin: 20px auto;
+  gap: 20px;
+  height: 400px;
+}
+
+.analyzer-map-container {
+  flex: 0;
+  /* Hidden initially */
+  width: 0;
+  opacity: 0;
+  border: 1px solid #333;
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+  transition: all 1s ease;
+  background: #0c0c0c;
+}
+
+.analyzer-map-container.visible {
+  flex: 1;
+  width: auto;
+  opacity: 1;
+  box-shadow: 0 0 20px rgba(0, 255, 0, 0.1);
+}
+
+.map-view {
+  width: 100%;
+  height: 100%;
+}
+
+.map-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
+/* Marker Style */
+:deep(.map-marker) {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: rgba(255, 0, 0, 0.5);
+  border: 2px solid #ff0000;
+  box-shadow: 0 0 10px #ff0000;
+  animation: pulse 2s infinite;
+  cursor: pointer;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+
+  50% {
+    transform: scale(1.5);
+    opacity: 0.7;
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 .console-header {
