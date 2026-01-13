@@ -1,6 +1,6 @@
 <template>
   <v-app :theme="store.theme">
-    <v-app-bar flat border="b" class="px-md-4" :color="store.theme === 'dark' ? 'black' : 'white'">
+    <v-app-bar flat border="b" class="px-md-4" :color="store.theme === 'dark' ? 'dark' : 'light'">
       <v-app-bar-title class="font-weight-bold text-uppercase tracking-widest">
         IVÁN ALEJANDRO COTTI
       </v-app-bar-title>
@@ -105,14 +105,14 @@ body {
   font-family: 'PrimaryFont', sans-serif;
 }
 
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.3s ease;
+.bg-dark {
+  background: #121212bd !important;
+  backdrop-filter: blur(5px);
 }
 
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
+.bg-light {
+  background: #e6e6e6bd !important;
+  backdrop-filter: blur(5px);
 }
 
 .v-application {

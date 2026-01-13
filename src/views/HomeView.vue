@@ -4,17 +4,17 @@
       <v-col cols="12" md="10" lg="8" class="mx-auto">
 
         <!-- Header -->
-        <header class="mb-12 d-flex flex-column align-center fade-section">
+        <section class="mb-12 d-flex flex-column align-center fade-section">
           <v-avatar size="128" class="mb-4">
             <v-icon icon="mdi-account-circle" size="128" color="primary"></v-icon>
           </v-avatar>
-          <h1 class="text-h3 font-weight-bold text-primary mb-2">
+          <h1 ref="mainTitle" class="text-h3 font-weight-bold text-primary mb-2">
             IVÁN ALEJANDRO COTTI
           </h1>
           <h2 class="text-h5 text-medium-emphasis">
             {{ t.title }}
           </h2>
-        </header>
+        </section>
 
         <section class="mb-4 fade-section">
           <GitContributions class="ma-auto" />
@@ -323,6 +323,10 @@ export default {
   },
 
   mounted() {
+    if (this.$refs.mainTitle) {
+      this.matrixEffect(this.$refs.mainTitle, 'IVÁN ALEJANDRO COTTI');
+    }
+
     const observer = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
@@ -339,7 +343,32 @@ export default {
       observer.observe(section);
     });
   },
-  methods: {}
+
+  methods: {
+    matrixEffect(element, finalText) {
+      const matrixChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*';
+      const chars = finalText.split('');
+      element.innerHTML = chars.map(char => `<span class="char">${char}</span>`).join('');
+
+      const charElements = element.querySelectorAll('.char');
+
+      charElements.forEach((char, index) => {
+        const iterations = 5 + Math.random() * 10;
+        let counter = 0;
+
+        const interval = setInterval(() => {
+          if (counter < iterations) {
+            char.textContent = matrixChars[Math.floor(Math.random() * matrixChars.length)];
+            counter++;
+          } else {
+            char.textContent = chars[index];
+            clearInterval(interval);
+          }
+        }, 30 + index * 10);
+        char.style.animationDelay = `${index * 0.03}s`;
+      });
+    }
+  }
 }
 </script>
 
@@ -415,5 +444,39 @@ export default {
 .fade-section.visible {
   opacity: 1;
   transform: translateY(0);
+}
+
+/* H1 ANIMATION */
+
+.char {
+  display: inline-block;
+  opacity: 0;
+  width: 1ch;
+  font-family: "PrimaryFont";
+  text-align: center;
+  animation: matrixReveal 0.3s ease-in forwards;
+}
+
+
+@keyframes matrixReveal {
+  0% {
+    opacity: 0;
+    color: #ffffff;
+    text-shadow: 0 0 20px #ffffff;
+    transform: scale(1.2);
+  }
+
+  50% {
+    opacity: 1;
+    color: #ffffff;
+    text-shadow: 0 0 15px #ffffff;
+  }
+
+  100% {
+    opacity: 1;
+    color: var(--bs-primary);
+    text-shadow: 0 0 10px var(--bs-primary);
+    transform: scale(1);
+  }
 }
 </style>
