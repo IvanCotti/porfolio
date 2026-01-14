@@ -1,30 +1,47 @@
 <template>
-  <div class="analyzer-container">
-    <div class="analyzer-console">
-      <div class="console-header">
-        <span class="dot red"></span>
-        <span class="dot yellow"></span>
-        <span class="dot green"></span>
-        <span class="title">Terminal</span>
-      </div>
-      <div class="console-body" ref="consoleBody">
-        <div v-for="(line, index) in displayedLines" :key="index" class="console-line">
-          <span class="prompt">> </span>
-          <span v-html="line"></span>
-        </div>
-        <div class="console-line active-line">
-          <span class="prompt">> </span>
-          <span class="cursor">_</span>
-        </div>
-      </div>
+  <div class="analyzer-console">
+    <div class="console-header">
+      <span class="dot red"></span>
+      <span class="dot yellow"></span>
+      <span class="dot green"></span>
+      <span class="title">Terminal</span>
     </div>
-    <div class="analyzer-map-container" :class="{ visible: showMap }">
-      <div id="map" class="map-view"></div>
-      <div v-if="!showMap" class="map-placeholder">
-        <span class="text-grey">Map System Offline...</span>
+    <div class="console-body" ref="consoleBody">
+      <div v-for="(line, index) in displayedLines" :key="index" class="console-line">
+        <span class="prompt">> </span>
+        <span v-html="line"></span>
+      </div>
+      <div class="console-line active-line">
+        <span class="prompt">> </span>
+        <span class="cursor">_</span>
       </div>
     </div>
   </div>
+
+  <v-expand-transition>
+    <v-card v-if="vtResults" class="country-container">
+      <div class="d-flex align-center ga-3 text-h5">
+        <img :src="flagUrl(vtResults.country_code)" :alt="vtResults.country_code" width="36" height="27" />
+        <span>{{ vtResults.location_trace }}</span>
+      </div>
+      <v-divider class="my-2" />
+      <div class="d-flex align-center ga-3">
+        <span>{{ vtResults.as_owner }}</span>
+        <span>{{ vtResults.regional_internet_registry }}</span>
+      </div>
+    </v-card>
+  </v-expand-transition>
+
+  <v-expand-transition>
+    <div v-if="showMap" class="analyzer-map-container">
+      <div class="text-end w-100"> <span class="text-green">●</span> Online</div>
+      <div id="map" class="map-view"></div>
+    </div>
+    <div v-else class="map-placeholder">
+      <div class="text-end w-100"> <span class="text-red">●</span> Offline</div>
+    </div>
+  </v-expand-transition>
+
 </template>
 
 <script>
@@ -55,17 +72,12 @@ export default {
     };
   },
 
-  computed: {},
   async mounted() {
     const cached = localStorage.getItem('vtResults')
     if (cached) {
       this.vtResults = JSON.parse(cached)
-      this.ipAddress = localStorage.getItem('ipAddress') || 'UNKNOWN'
-      this.latitude = localStorage.getItem('latitude')
-      this.longitude = localStorage.getItem('longitude')
 
-      if (!this.latitude || !this.longitude) {
-        // Legacy cache without location data, clear and re-fetch
+      if (!this.vtResults.location_coords || this.vtResults.location_coords.length != 2) {
         localStorage.removeItem('vtResults')
         this.vtResults = null
         this.queueMessage("Updating system protocols...", "system")
@@ -78,7 +90,14 @@ export default {
       await this.analyzeIP()
     }
   },
+
   methods: {
+
+    flagUrl(code) {
+      if (!code) return 'https://flagcdn.com/w40/unknown.png';
+      return `https://flagcdn.com/w40/${code.toLowerCase()}.png`;
+    },
+
     async analyzeIP() {
       this.loading = true;
       this.queueMessage("Fetching IP address...", "system")
@@ -88,33 +107,24 @@ export default {
         if (!ipResponse.ok) throw new Error('Failed to fetch IP data');
         const ipData = await ipResponse.json();
 
-        this.ipAddress = ipData.ip;
-        this.latitude = ipData.latitude;
-        this.longitude = ipData.longitude;
-
-        localStorage.setItem('ipAddress', this.ipAddress)
-        localStorage.setItem('latitude', this.latitude)
-        localStorage.setItem('longitude', this.longitude)
-        this.queueMessage(`Target Identified: ${this.ipAddress}`, "success")
+        this.queueMessage(`Target Identified: ${ipData.ip}`, "success")
         if (ipData.country_name) {
           this.queueMessage(`Location Trace: ${ipData.city}, ${ipData.country_name}`, "warning")
         }
 
-        this.queueMessage("Querying VirusTotal Database...", "system")
-
         const headers = { 'x-apikey': this.apiKey }
 
         const [reportRes, resolutionsRes] = await Promise.all([
-          fetch(`https://www.virustotal.com/api/v3/ip_addresses/${this.ipAddress}`, { headers }),
-          fetch(`https://www.virustotal.com/api/v3/ip_addresses/${this.ipAddress}/resolutions?limit=10`, { headers })
+          fetch(`https://www.virustotal.com/api/v3/ip_addresses/${ipData.ip}`, { headers }),
+          fetch(`https://www.virustotal.com/api/v3/ip_addresses/${ipData.ip}/resolutions?limit=10`, { headers })
         ])
 
         if (!reportRes.ok) throw new Error('Error querying VirusTotal Report');
 
         const reportData = await reportRes.json();
+        console.log(reportData)
         const attrs = reportData.data.attributes || {};
 
-        // Filter malicious results (exclude undetected)
         const maliciousResults = {};
         if (attrs.last_analysis_results) {
           Object.entries(attrs.last_analysis_results).forEach(([engine, result]) => {
@@ -124,8 +134,7 @@ export default {
           });
         }
 
-        // Process Resolutions
-        let processedResolutions = null;
+        let processedResolutions = [];
         if (resolutionsRes.ok) {
           const resolutionsData = await resolutionsRes.json();
           if (resolutionsData.data && resolutionsData.data.length > 0) {
@@ -138,15 +147,17 @@ export default {
           }
         }
 
-        // Construct Final Object
         this.vtResults = {
+          created_at: new Date().toISOString(),
+          ip_address: ipData.ip,
           as_owner: attrs.as_owner || null,
           network: attrs.network || null,
           regional_internet_registry: attrs.regional_internet_registry || null,
-          continent: attrs.continent || null,
-          country: attrs.country || null,
-          malicious_results: Object.keys(maliciousResults).length > 0 ? maliciousResults : null,
-          resolutions: processedResolutions
+          country_code: attrs.country ? attrs.country : 'Unknown',
+          location_coords: [ipData.longitude, ipData.latitude],
+          location_trace: `${ipData.city}, ${ipData.country_name}`,
+          malicious_results: Object.keys(maliciousResults).length > 0 ? maliciousResults : "Engines: Malware Undetected",
+          resolutions: processedResolutions.length > 0 ? processedResolutions : "Not Found"
         };
 
         localStorage.setItem('vtResults', JSON.stringify(this.vtResults))
@@ -162,53 +173,31 @@ export default {
     },
 
     queueAnalysisOutput() {
-      this.queueMessage("--- ANALYSIS REPORT ---", "header")
-
+      this.queueMessage("Analysis IP Address: ● ONLINE", "success")
+      this.queueMessage("Receiving initial data from host...", "header")
       if (this.vtResults) {
-        for (const [key, value] of Object.entries(this.vtResults)) {
-          if (key === 'malicious_results') {
-            if (value) {
-              this.queueMessage("--- DETECTED THREATS ---", "header")
-              Object.entries(value).forEach(([engine, result]) => {
-                const status = result.category === 'malicious' ? 'error' : 'warning';
-                this.queueMessage(`[${engine}]: ${result.result} (${result.category})`, status)
-              });
-            } else {
-              this.queueMessage("No malicious results detected.", "success")
-            }
-          } else if (key === 'resolutions') {
-            if (value) {
-              this.queueMessage("--- RESOLUTIONS ---", "header")
-              value.forEach((res, index) => {
-                this.queueMessage(`[Resolution #${index + 1}]`, "header")
-                Object.entries(res).forEach(([rKey, rVal]) => {
-                  if (rVal && typeof rVal === 'object') {
-                    this.queueMessage(`   ${rKey}: ${this.formatObjectInline(rVal)}`)
-                  } else {
-                    this.queueMessage(`   ${rKey}: ${rVal || 'null'}`)
-                  }
-                })
-              })
-            } else {
-              this.queueMessage("Resolutions: null", "system")
-            }
+        Object.entries(this.vtResults).forEach(([key, value]) => {
+          if (!value) {
+            this.queueMessage(`${key}: Not Found`, "system")
           } else {
+            if (key == 'location_coords' && value.length == 2) {
+              this.queueMessage(`Ubication Found: ${value}`, "success")
+              this.queueMessage(`Opening geolocation map`, "warning")
+              this.initMap(value[1], value[0])
+            } else {
+              this.queueMessage(`${key}: ${value}`, "system")
+            }
           }
-        }
 
-        // Trigger Map if location is available
-        if (this.vtResults && this.vtResults.country) {
-          // We can trigger it here or after specific lines.
-          // Let's trigger it after a short delay or when the report is somewhat populated
-        }
+        })
+
       }
 
-      this.queueMessage("--- END OF REPORT ---", "system")
+      this.queueMessage("[EYESPY] Starting intrusive data collection algorithms ", "success")
       this.processQueue();
     },
 
-    initMap() {
-      if (!this.latitude || !this.longitude) return;
+    initMap(lat, lon) {
       if (this.map) return;
 
       this.showMap = true;
@@ -216,26 +205,28 @@ export default {
       this.$nextTick(() => {
         this.map = new maplibregl.Map({
           container: 'map',
-          style: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json', // Dark theme
-          center: [this.longitude, this.latitude],
-          zoom: 2, // Start zoomed out
+          style: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
+          center: [lon, lat],
+          zoom: 2,
           attributionControl: false
         });
 
         this.map.on('load', () => {
-          // Fly to location
           this.map.flyTo({
-            center: [this.longitude, this.latitude],
-            zoom: 5,
-            speed: 1.2
+            center: [lon, lat],
+            zoom: 12,
+            speed: 2
           });
 
           const el = document.createElement('div');
           el.className = 'map-marker';
 
-          new maplibregl.Marker(el)
-            .setLngLat([this.longitude, this.latitude])
-            .addTo(this.map);
+          new maplibregl.Marker({
+            element: el,
+            anchor: 'center'
+          })
+            .setLngLat([lon, lat])
+            .addTo(this.map)
         });
       });
     },
@@ -257,18 +248,7 @@ export default {
 
       this.outputBuffer.push(formattedText)
 
-      // Check for triggers to open map
-      if (text.toLowerCase().includes('country') || text.toLowerCase().includes('location trace')) {
-        // Queue the map open action? No, better to do it cleanly.
-        // We'll set a flag to open it after this line is typed?
-        // Actually, let's just trigger it immediately but the 'visible' class handles the fade in.
-        // Better: Add a special "command" to the queue or check in typeLine.
-        // Simplest: Check in analyzeIP or just call initMap() but it needs to happen in sync with typing?
-        // The user said "Cuando se muestre el pais y continente... se abra un mapa".
-        // So it should happen when that line is displayed.
-      }
-
-      if (!this.isTyping && this.outputBuffer.length === 1) { // Start if not already running
+      if (!this.isTyping && this.outputBuffer.length === 1) {
         this.processQueue()
       }
     },
@@ -282,17 +262,10 @@ export default {
         await this.typeLine(content)
         await new Promise(r => setTimeout(r, this.lineDelay))
       }
-
       this.isTyping = false
-      // this.$emit('finished')
     },
 
     async typeLine(htmlContent) {
-      // Check if this line contains Country/Continent info to trigger map
-      if (htmlContent.includes('country') || htmlContent.includes('Location Trace')) {
-        this.initMap();
-      }
-
       const hasTags = /<[a-z][\s\S]*>/i.test(htmlContent)
 
       if (hasTags) {
@@ -308,7 +281,7 @@ export default {
           this.scrollToBottom()
           await new Promise(r => setTimeout(r, this.typingSpeed))
         }
-        return // Done typing this line
+        return
       }
 
       this.scrollToBottom()
@@ -326,52 +299,49 @@ export default {
 
 <style scoped>
 .analyzer-console {
+  width: 500px;
+  box-shadow: 0 0 20px rgba(var(--v-theme-primary), 0.1);
   background-color: #0c0c0c;
   border: 1px solid #333;
   border-radius: 8px;
-  box-shadow: 0 0 20px rgba(0, 255, 0, 0.1);
-  width: 100%;
-  flex: 1;
-  /* Take available space */
   display: flex;
   flex-direction: column;
   transition: all 0.5s ease;
+  position: absolute;
+  top: calc(var(--header-height) + 1em);
+  left: 1em;
 }
 
-.analyzer-container {
-  display: flex;
-  flex-direction: row;
-  width: 100%;
-  max-width: 1200px;
-  /* Increased max-width */
-  margin: 20px auto;
-  gap: 20px;
-  height: 400px;
-}
 
 .analyzer-map-container {
-  flex: 0;
-  /* Hidden initially */
-  width: 0;
-  opacity: 0;
-  border: 1px solid #333;
-  border-radius: 8px;
-  overflow: hidden;
-  position: relative;
-  transition: all 1s ease;
+  width: 500px;
+  height: 400px;
+  box-shadow: 0 0 20px rgba(var(--v-theme-primary), 0.1);
   background: #0c0c0c;
+  border: 1px solid #333;
+  overflow: hidden;
+  transition: all 1s ease;
+  padding: 8px;
+  position: absolute;
+  bottom: 1em;
+  right: 1em;
 }
 
-.analyzer-map-container.visible {
-  flex: 1;
-  width: auto;
-  opacity: 1;
-  box-shadow: 0 0 20px rgba(0, 255, 0, 0.1);
+.country-container {
+  position: absolute;
+  top: calc(var(--header-height) + 2em);
+  right: 2em;
+  background-color: #0c0c0c;
+  border: 1px solid #333;
+  border-radius: 8px;
+  padding: 8px;
+  box-shadow: 0 0 20px rgba(var(--v-theme-primary), 0.1);
 }
 
 .map-view {
   width: 100%;
   height: 100%;
+  border: 1px solid #333;
 }
 
 .map-placeholder {
@@ -379,36 +349,31 @@ export default {
   align-items: center;
   justify-content: center;
   height: 100%;
+  position: absolute;
 }
 
-/* Marker Style */
 :deep(.map-marker) {
-  width: 20px;
-  height: 20px;
+  width: 50px;
+  height: 50px;
+  border: 1px solid rgb(var(--v-theme-primary));
+  background-color: #0c0c0c90;
+  position: relative;
+}
+
+:deep(.map-marker::after) {
+  content: '◆';
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  text-shadow: 0 0 5px rgba(var(--v-theme-tertiary), 0.5);
+  color: rgb(var(--v-theme-primary));
+  position: absolute;
+  inset: -4px;
   border-radius: 50%;
-  background-color: rgba(255, 0, 0, 0.5);
-  border: 2px solid #ff0000;
-  box-shadow: 0 0 10px #ff0000;
-  animation: pulse 2s infinite;
-  cursor: pointer;
+  animation: ripple 2s infinite;
 }
 
-@keyframes pulse {
-  0% {
-    transform: scale(1);
-    opacity: 1;
-  }
-
-  50% {
-    transform: scale(1.5);
-    opacity: 0.7;
-  }
-
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
 
 .console-header {
   background-color: #1a1a1a;
@@ -462,7 +427,7 @@ export default {
 }
 
 .console-body::-webkit-scrollbar-thumb {
-  background: #004400;
+  background: #4141418e;
   border-radius: 4px;
 }
 

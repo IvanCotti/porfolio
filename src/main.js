@@ -22,6 +22,17 @@ const myCustomDark = {
   }
 }
 
+const myCustomDark2 = {
+  dark: true,
+  colors: {
+    background: '#111925ff',
+    surface: '#1a2433ff',
+    primary: '#F63049',
+    secondary: '#D02752',
+    tertiary: '#8A244B',
+  },
+}
+
 const myCustomLight = {
   dark: false,
   colors: {
@@ -37,12 +48,12 @@ const vuetify = createVuetify({
   components,
   directives,
   theme: {
-    defaultTheme: 'myCustomDark',
+    defaultTheme: 'myCustomDark2',
     themes: {
-      myCustomDark,
+      myCustomDark2,
       myCustomLight,
       light: myCustomLight,
-      dark: myCustomDark,
+      dark: myCustomDark2,
     }
   },
   icons: {

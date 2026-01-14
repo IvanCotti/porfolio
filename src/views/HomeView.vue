@@ -1,138 +1,130 @@
 <template>
-  <v-container class="py-10">
-    <v-row>
-      <v-col cols="12" md="10" lg="8" class="mx-auto">
+  <section class="hero d-flex flex-column align-center justify-center fade-section">
+    <CursorAnimated />
+    <v-avatar size="128" class="mb-4">
+      <v-icon icon="mdi-account-circle" size="128" color="primary"></v-icon>
+    </v-avatar>
+    <h1 ref="mainTitle" class="text-h3 font-weight-bold text-primary mb-2">
+      IVÁN ALEJANDRO COTTI
+    </h1>
+    <h2 class="text-h5 text-medium-emphasis">
+      {{ t.title }}
+    </h2>
+    <SecurityAnalyzer />
+  </section>
 
-        <!-- Header -->
-        <section class="mb-12 d-flex flex-column align-center fade-section">
-          <v-avatar size="128" class="mb-4">
-            <v-icon icon="mdi-account-circle" size="128" color="primary"></v-icon>
-          </v-avatar>
-          <h1 ref="mainTitle" class="text-h3 font-weight-bold text-primary mb-2">
-            IVÁN ALEJANDRO COTTI
-          </h1>
-          <h2 class="text-h5 text-medium-emphasis">
-            {{ t.title }}
-          </h2>
-        </section>
+  <v-divider class="mb-12"></v-divider>
 
-        <section class="mb-4 fade-section">
-          <GitContributions class="ma-auto" />
-        </section>
-
-        <v-divider class="mb-12"></v-divider>
-
-        <section class="mb-16 fade-section">
-          <h3 class="text-h5 font-weight-bold mb-6 text-primary">{{ t.sections.info }}</h3>
-          <v-row>
-            <v-col cols="12" sm="6">
-              <div class="d-flex align-center mb-3">
-                <v-icon color="primary" class="mr-3">mdi-email-outline</v-icon>
-                <span class="text-body-1">ivancotti2001@gmail.com</span>
-              </div>
-              <div class="d-flex align-center mb-3">
-                <v-icon color="primary" class="mr-3">mdi-map-marker-outline</v-icon>
-                <span class="text-body-1">Devoto, CABA, Argentina</span>
-              </div>
-              <div class="d-flex align-center mb-3">
-                <v-icon color="primary" class="mr-3">mdi-phone-outline</v-icon>
-                <span class="text-body-1">+54 011 6560-2792</span>
-              </div>
-            </v-col>
-            <v-col cols="12" sm="6">
-              <div class="d-flex align-center mb-3">
-                <v-icon color="primary" class="mr-3">mdi-linkedin</v-icon>
-                <a href="https://linkedin.com/in/ivan-alejandro-cotti" target="_blank"
-                  class="text-decoration-none text-primary font-weight-medium">ivan-alejandro-cotti</a>
-              </div>
-              <div class="d-flex align-center mb-3">
-                <v-icon color="primary" class="mr-3">mdi-github</v-icon>
-                <a href="https://github.com/IvanCotti" target="_blank"
-                  class="text-decoration-none text-primary font-weight-medium">IvanCotti</a>
-              </div>
-              <div class="d-flex align-center mb-3">
-                <v-icon color="primary" class="mr-3">mdi-translate</v-icon>
-                <span class="text-body-1">{{ t.english }}</span>
-              </div>
-            </v-col>
-          </v-row>
-        </section>
-
-        <section class="mb-10 fade-section">
-          <h3 class="text-h5 font-weight-bold mb-6 text-primary">{{ t.sections.education }}</h3>
-          <v-card class="d-flex ga-3 pa-6 border-opacity-25"
-            :class="store.theme === 'dark' ? 'bg-grey-darken-4' : 'bg-grey-lighten-5'">
-            <img src="@/assets/images/unsam-logo.png" alt="Education" style="height: 100px;">
-            <div class="d-flex flex-column flex-md-row justify-center align-md-center">
-              <div>
-                <h2 class="font-weight-bold text-high-emphasis">{{ t.education.institution }}</h2>
-                <h3 class="text-primary font-weight-medium">{{ t.education.degree }}</h3>
-                <div class="text-medium-emphasis">{{ t.education.period }} | {{ t.education.status }}</div>
-              </div>
-            </div>
-          </v-card>
-        </section>
-
-        <section class="mb-16 fade-section">
-          <h3 class="text-h5 font-weight-bold mb-8 text-primary">{{ t.sections.experience }}</h3>
-
-          <v-timeline side="end" align="start" density="comfortable"
-            :line-color="store.theme === 'dark' ? 'grey-darken-2' : 'grey-lighten-2'">
-
-            <v-timeline-item dot-color="primary" size="small" v-for="(job, index) in t.experience" :key="index">
-              <v-card variant="flat" class="bg-transparent">
-                <v-card-title class="text-h6 font-weight-bold px-0 pt-0 text-wrap">{{ job.role }}</v-card-title>
-                <v-card-subtitle class="px-0 text-subtitle-1 text-high-emphasis opacity-100 mb-1">
-                  {{ job.company }}
-                </v-card-subtitle>
-                <v-card-text class="px-0 pb-0">
-                  <div class="text-caption text-medium-emphasis mb-3 font-weight-medium text-uppercase tracking-wider">
-                    {{ job.period }}
-                  </div>
-                  <ul class="ml-5 pl-4 text-body-1 text-medium-emphasis custom-list">
-                    <li v-for="(task, i) in job.tasks" :key="i" class="mb-2">{{ task }}</li>
-                  </ul>
-                </v-card-text>
-              </v-card>
-            </v-timeline-item>
-
-          </v-timeline>
-        </section>
-
-        <section class="skills mb-16 fade-section">
-          <h3 class="text-h5 font-weight-bold mb-8 text-primary">{{ t.sections.skills }}</h3>
-
-          <div v-for="(category, key) in skills" :key="key" class="mb-8">
-            <h4 class="text-h5 font-weight-bold text-high-emphasis mb-4">
-              {{ t.skillCategories[key] }}
-            </h4>
-            <v-row class="ma-n2">
-              <v-col v-for="skill in category" :key="skill.name" cols="6" sm="4" md="3" lg="2" class="pa-2">
-                <v-card :href="skill.url" target="_blank" rel="noopener noreferrer"
-                  class="d-flex flex-column align-center justify-center py-4 h-100 transition-swing cursor-pointer">
-                  <v-img :src="skill.logo" :alt="skill.name" width="48" height="48" class="mb-3" contain></v-img>
-                  <div class="text-subtitle-2 font-weight-bold text-center">{{ skill.name }}</div>
-                </v-card>
-              </v-col>
-            </v-row>
+  <section class="mb-16 fade-section">
+    <GitContributions class="ma-auto" />
+    <v-card class="pa-6">
+      <h3 class="text-h5 font-weight-bold mb-6 text-primary">{{ t.sections.info }}</h3>
+      <v-row>
+        <v-col cols="12" sm="6">
+          <div class="d-flex align-center mb-3">
+            <v-icon color="primary" class="mr-3">mdi-email-outline</v-icon>
+            <span class="text-body-1">ivancotti2001@gmail.com</span>
           </div>
-        </section>
+          <div class="d-flex align-center mb-3">
+            <v-icon color="primary" class="mr-3">mdi-map-marker-outline</v-icon>
+            <span class="text-body-1">Devoto, CABA, Argentina</span>
+          </div>
+          <div class="d-flex align-center mb-3">
+            <v-icon color="primary" class="mr-3">mdi-phone-outline</v-icon>
+            <span class="text-body-1">+54 011 6560-2792</span>
+          </div>
+          <div class="d-flex align-center mb-3">
+            <v-icon color="primary" class="mr-3">mdi-linkedin</v-icon>
+            <a href="https://linkedin.com/in/ivan-alejandro-cotti" target="_blank"
+              class="text-decoration-none text-primary font-weight-medium">ivan-alejandro-cotti</a>
+          </div>
+          <div class="d-flex align-center mb-3">
+            <v-icon color="primary" class="mr-3">mdi-github</v-icon>
+            <a href="https://github.com/IvanCotti" target="_blank"
+              class="text-decoration-none text-primary font-weight-medium">IvanCotti</a>
+          </div>
+          <div class="d-flex align-center mb-3">
+            <v-icon color="primary" class="mr-3">mdi-translate</v-icon>
+            <span class="text-body-1">{{ t.english }}</span>
+          </div>
+        </v-col>
+      </v-row>
+    </v-card>
+  </section>
 
-      </v-col>
-    </v-row>
+  <section class="mb-10 fade-section">
+    <h3 class="text-h5 font-weight-bold mb-6 text-primary">{{ t.sections.education }}</h3>
+    <v-card class="d-flex ga-3 pa-6 border-opacity-25">
+      <img src="@/assets/images/unsam-logo.png" alt="Education" style="height: 100px;">
+      <div class="d-flex flex-column flex-md-row justify-center align-md-center">
+        <div>
+          <h2 class="font-weight-bold text-high-emphasis">{{ t.education.institution }}</h2>
+          <h3 class="text-primary font-weight-medium">{{ t.education.degree }}</h3>
+          <div class="text-medium-emphasis">{{ t.education.period }} | {{ t.education.status }}</div>
+        </div>
+      </div>
+    </v-card>
+  </section>
 
-  </v-container>
+  <section class="mb-16 fade-section">
+    <h3 class="text-h5 font-weight-bold mb-8 text-primary">{{ t.sections.experience }}</h3>
+
+    <v-timeline side="end" align="start" density="comfortable"
+      :line-color="store.theme === 'dark' ? 'grey-darken-2' : 'grey-lighten-2'">
+
+      <v-timeline-item dot-color="primary" size="small" v-for="(job, index) in t.experience" :key="index">
+        <v-card variant="flat" class="bg-transparent">
+          <v-card-title class="text-h6 font-weight-bold px-0 pt-0 text-wrap">{{ job.role }}</v-card-title>
+          <v-card-subtitle class="px-0 text-subtitle-1 text-high-emphasis opacity-100 mb-1">
+            {{ job.company }}
+          </v-card-subtitle>
+          <v-card-text class="px-0 pb-0">
+            <div class="text-caption text-medium-emphasis mb-3 font-weight-medium text-uppercase tracking-wider">
+              {{ job.period }}
+            </div>
+            <ul class="ml-5 pl-4 text-body-1 text-medium-emphasis custom-list">
+              <li v-for="(task, i) in job.tasks" :key="i" class="mb-2">{{ task }}</li>
+            </ul>
+          </v-card-text>
+        </v-card>
+      </v-timeline-item>
+
+    </v-timeline>
+  </section>
+
+  <section class="skills mb-16 fade-section">
+    <h3 class="text-h5 font-weight-bold mb-8 text-primary">{{ t.sections.skills }}</h3>
+
+    <div v-for="(category, key) in skills" :key="key" class="mb-8">
+      <h4 class="text-h5 font-weight-bold text-high-emphasis mb-4">
+        {{ t.skillCategories[key] }}
+      </h4>
+      <v-row class="ma-n2">
+        <v-col v-for="skill in category" :key="skill.name" cols="6" sm="4" md="3" lg="2" class="pa-2">
+          <v-card :href="skill.url" target="_blank" rel="noopener noreferrer"
+            class="d-flex flex-column align-center justify-center py-4 h-100 transition-swing cursor-pointer">
+            <v-img :src="skill.logo" :alt="skill.name" width="48" height="48" class="mb-3" contain></v-img>
+            <div class="text-subtitle-2 font-weight-bold text-center">{{ skill.name }}</div>
+          </v-card>
+        </v-col>
+      </v-row>
+    </div>
+  </section>
 </template>
 
 <script>
 import { useAppStore } from '../stores/appStore';
+import SecurityAnalyzer from '../components/SecurityAnalyzer.vue';
 import GitContributions from '../components/GitContributions.vue';
+import CursorAnimated from '../components/CursorAnimated.vue';
 
 export default {
   name: "HomeView",
   props: {},
   components: {
-    GitContributions
+    GitContributions,
+    CursorAnimated,
+    SecurityAnalyzer
   },
   data() {
     return {
@@ -373,9 +365,74 @@ export default {
 </script>
 
 <style>
+.hero {
+  height: 100vh;
+  border-bottom: 1px solid var(--v-theme-primary);
+  background-size: 25px 25px;
+  background-image: radial-gradient(rgba(var(--v-theme-primary), 0.2) 1px, transparent 3px);
+  background-repeat: repeat;
+}
+
+main section:not(.hero) {
+  width: 50%;
+  margin: auto;
+}
+
+/* Mobile Responsive Styles */
+@media (max-width: 960px) {
+  main section:not(.hero) {
+    width: 85%;
+  }
+}
+
+@media (max-width: 600px) {
+  main section:not(.hero) {
+    width: 90%;
+    padding: 0 8px;
+  }
+
+  .hero {
+    padding: 0 16px;
+  }
+
+  .hero h1 {
+    font-size: 1.75rem !important;
+    line-height: 1.2;
+  }
+
+  .hero h2 {
+    font-size: 1.1rem !important;
+    text-align: center;
+  }
+
+  .hero .v-avatar {
+    width: 96px !important;
+    height: 96px !important;
+  }
+
+  .hero .v-avatar .v-icon {
+    font-size: 96px !important;
+  }
+
+  .skills .v-card {
+    width: 100%;
+  }
+
+  .v-timeline {
+    padding-left: 0 !important;
+  }
+}
+
+/* Overrides Vuetify */
+
 .v-timeline-divider__dot,
 .v-timeline-item__body {
   transition: all 0.3s ease;
+}
+
+.v-timeline-item .v-timeline-divider__dot {
+  height: unset !important;
+  width: unset !important;
 }
 
 .v-timeline-item:hover .v-timeline-divider__dot {
@@ -383,18 +440,13 @@ export default {
   animation: ripple 1.6s 0.4s ease-out infinite;
 }
 
-.v-timeline-item:hover .v-timeline-item__body {
-  transform: translateX(1em);
+.v-timeline-divider__inner-dot {
+  height: unset !important;
+  width: unset !important;
 }
 
-@keyframes ripple {
-  from {
-    box-shadow: 0 0 0 0 var(--color-primary);
-  }
-
-  to {
-    box-shadow: 0 0 0 22px #63d2ff00;
-  }
+.v-timeline-item:hover .v-timeline-item__body {
+  transform: translateX(1em);
 }
 
 .custom-list {
@@ -412,6 +464,7 @@ export default {
 .skills .v-card {
   transition: all 0.3s ease;
   border: 5px solid transparent;
+  width: object-fit;
 }
 
 .skills .v-card .v-img {
@@ -422,16 +475,10 @@ export default {
   transform: scale(1.4);
 }
 
-.skills .v-card:not(.v-theme--light):hover {
-  border-image: radial-gradient(transparent 90%, #d1b529 10%) 1;
-  background: radial-gradient(#7f53016e, #291b0250);
-  color: #d1b529;
-}
-
-.skills .v-card.v-theme--light:hover {
-  border-image: radial-gradient(transparent 90%, #2956d1 10%) 1;
-  background: radial-gradient(#ffffff50, #01467f6e);
-  color: #2956d1;
+.skills .v-card:hover {
+  border-image: radial-gradient(transparent 90%, rgb(var(--v-theme-primary)) 10%) 1;
+  background: radial-gradient(rgba(var(--v-theme-primary), 0.5), rgba(var(--v-theme-surface), 0.5));
+  color: rgb(var(--v-theme-primary));
 }
 
 .fade-section {

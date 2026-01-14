@@ -44,7 +44,7 @@ export default {
   props: {
     text: {
       type: String,
-      default: 'IvanCotti'
+      default: 'IvanCotti - GitHub'
     },
     scrollSpeed: {
       type: Number,
@@ -184,14 +184,21 @@ export default {
   width: 535px;
   height: fit-content;
   padding: 20px 10px;
-  border: solid 1px #3d444d;
+  border: solid 2px #3d444d;
   border-top-left-radius: 10px;
   border-top-right-radius: 10px;
   font-size: 12px;
   font-family: system-ui;
   padding-bottom: 5px;
-  background: #121212;
+  background: rgb(var(--v-theme-surface));
   color: white;
+  transition: all 0.3s ease-in-out;
+}
+
+.git-contributions:hover {
+  border: solid 2px #a3ffbb;
+  box-shadow: 0px 0px 20px rgb(var(--v-theme-success));
+  cursor: pointer;
 }
 
 .contribute-calendar {
