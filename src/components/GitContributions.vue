@@ -20,7 +20,7 @@
         <p>Wed</p>
         <p>Fri</p>
       </div>
-      <div>
+      <div class="aux">
         <div ref="ledContainer" class="led-container"></div>
         <div class="bottom-scale">
           <p>Less</p>
@@ -182,6 +182,8 @@ export default {
 
 .git-contributions {
   width: 535px;
+  max-width: 100%;
+  overflow: hidden;
   height: fit-content;
   padding: 20px 10px;
   border: solid 2px #3d444d;
@@ -214,6 +216,11 @@ export default {
 
 .weeks p {
   margin: 0;
+}
+
+.aux .bottom-scale {
+  display: flex;
+  width: 90%;
 }
 
 .months {

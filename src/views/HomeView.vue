@@ -15,15 +15,14 @@
 
   <v-divider></v-divider>
 
-  <section class="pa-16 fade-section">
+  <section class="py-16 fade-section">
     <GitContributions class="ma-auto mb-8" />
   </section>
 
   <section class="mb-16 fade-section">
     <h3 class="text-h4 font-weight-bold mb-8 text-primary">{{ t.sections.experience }}</h3>
 
-    <v-timeline side="end" align="start" density="comfortable"
-      :line-color="store.theme === 'dark' ? 'grey-darken-2' : 'grey-lighten-2'">
+    <v-timeline side="end" align="start" density="comfortable" line-color="tertiary">
 
       <v-timeline-item dot-color="primary" size="small" v-for="(job, index) in t.experience" :key="index">
         <v-card variant="flat" class="bg-transparent">
@@ -52,7 +51,7 @@
       <h4 class="text-h5 text-high-emphasis mb-4">
         <v-icon icon="mdi-chevron-right" class="mr-2"></v-icon>{{ t.skillCategories[key] }}
       </h4>
-      <div class="d-flex flex-wrap ga-3">
+      <div class="d-flex justify-center flex-wrap ga-3">
         <v-card v-for="skill in category" :key="skill.name" :href="skill.url" target="_blank" rel="noopener noreferrer"
           class="d-flex flex-column align-center justify-center py-4 h-100 transition-swing cursor-pointer">
           <v-img :src="skill.logo" :alt="skill.name" width="48" height="48" class="mb-3" contain></v-img>
@@ -156,20 +155,16 @@ main section:not(.hero) {
 }
 
 /* Mobile Responsive Styles */
-@media (max-width: 960px) {
-  main section:not(.hero) {
-    width: 85%;
-  }
-}
 
 @media (max-width: 600px) {
   main section:not(.hero) {
-    width: 90%;
-    padding: 0 8px;
+    width: 100%;
+    margin: 0;
   }
 
   .hero {
-    padding: 0 16px;
+    height: fit-content;
+    padding-top: calc(var(--header-height) + 1em);
   }
 
   .hero h1 {
@@ -196,7 +191,23 @@ main section:not(.hero) {
   }
 
   .v-timeline {
-    padding-left: 0 !important;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1em 0.5em;
+  }
+
+  .v-timeline-item__body {
+    padding: 0 !important;
+    max-width: 100%;
+  }
+
+  .v-timeline-divider {
+    display: none;
+  }
+
+  h3 {
+    text-align: center;
   }
 }
 

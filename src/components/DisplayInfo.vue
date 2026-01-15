@@ -115,6 +115,8 @@ export default {
   methods: {
 
     startDrag(event, elementKey) {
+      if (this.isMobile()) return;
+
       // Solo permitir arrastrar si se hace click en el header/drag-handle
       if (!event.target.closest('.drag-handle')) {
         return;
@@ -140,6 +142,10 @@ export default {
 
       // Agregar clase visual
       element.classList.add('dragging');
+    },
+
+    isMobile() {
+      return window.innerWidth <= 900;
     },
 
     onDrag(event) {
@@ -588,6 +594,49 @@ export default {
 .console-body {
   cursor: default !important;
   user-select: text;
+}
+
+@media (max-width: 600px) {
+
+  .analyzer-console,
+  .analyzer-map-container,
+  .uni-container {
+    position: relative;
+    width: 90%;
+    margin: 1em auto;
+    left: auto;
+    top: auto;
+    bottom: auto;
+    right: auto;
+    height: auto;
+    min-height: 0;
+  }
+
+  .uni-container .campus {
+    max-width: 100%;
+    height: 100%;
+    width: fit-content;
+  }
+
+  .analyzer-console {
+    order: 1;
+    margin-top: 2em;
+  }
+
+  .uni-container {
+    order: 2;
+    margin-bottom: 2em;
+  }
+
+  .analyzer-map-container {
+    order: 3;
+    height: 300px;
+  }
+
+  .console-body {
+    height: 300px;
+  }
+
 }
 </style>
 ```
