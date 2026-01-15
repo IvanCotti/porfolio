@@ -1,6 +1,7 @@
 <template>
-  <div class="analyzer-console">
-    <div class="console-header">
+  <div v-if="showConsole" class="analyzer-console draggable" ref="console" @mousedown="startDrag($event, 'console')"
+    :style="positions.console">
+    <div class="console-header drag-handle">
       <span class="dot red"></span>
       <span class="dot yellow"></span>
       <span class="dot green"></span>
@@ -18,29 +19,35 @@
     </div>
   </div>
 
-  <v-expand-transition>
-    <v-card v-if="showMap" class="country-container">
-      <div class="d-flex align-center ga-3 text-h5">
-        <img :src="flagUrl(vtResults.country_code)" :alt="vtResults.country_code" width="36" height="27" />
-        <span>{{ vtResults.location_trace }}</span>
+  <div v-if="showUni" class="uni-container draggable" ref="uniContainer" @mousedown="startDrag($event, 'uniContainer')"
+    :style="positions.uniContainer">
+    <div class="header d-flex align-center ga-3 drag-handle">
+      <div class="d-flex flex-column pa-3">
+        <div class="d-flex align-center ga-1">
+          <span class="text-h4">UNSAM</span>
+          <v-icon icon="mdi-chevron-right" size="tiny" />
+          <span class="text-emphasis-medium">{{ education.institution }}</span>
+        </div>
+        <span class="text-body-2 text-amber-darken-2">San Martín, Buenos Aires</span>
       </div>
-      <v-divider class="my-2" />
-      <div class="d-flex align-center ga-3">
-        <span>{{ vtResults.owner }}</span>
-        <span>{{ vtResults.domain }}</span>
-      </div>
-    </v-card>
-  </v-expand-transition>
+    </div>
+    <img src="@/assets/images/unsam-logo.png" alt="uni" class="logo" />
+    <div class="gradient"></div>
+    <img src="@/assets/images/campus.webp" alt="campus" class="campus" />
+  </div>
 
-  <v-expand-transition>
-    <div v-if="showMap" class="analyzer-map-container">
-      <div class="text-end w-100 px-2"> <span class="text-green">●</span> Online</div>
-      <div id="map" class="map-view"></div>
+  <div v-if="showMap" class="analyzer-map-container draggable" ref="mapContainer"
+    @mousedown="startDrag($event, 'mapContainer')" :style="positions.mapContainer">
+    <div class="d-flex justify-space-between text-white w-100 px-2 py-1 drag-handle">
+      <div class="d-flex align-center ga-2">
+        <img src="https://flagcdn.com/w40/ar.png" alt="ar" width="32" height="24" />
+        <span>San Martín, Buenos Aires</span>
+        <!-- <span>-34.57 -58.52</span> -->
+      </div>
+      <div><span class="text-green">●</span> Online</div>
     </div>
-    <div v-else class="map-placeholder">
-      <div class="text-end w-100"> <span class="text-red">●</span> Offline</div>
-    </div>
-  </v-expand-transition>
+    <div id="map" class="map-view"></div>
+  </div>
 
 </template>
 
@@ -49,149 +56,191 @@ import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
 export default {
-  name: "SecurityAnalyzer",
-  props: {},
-  emits: ['finished'],
+  name: "DisplayInfo",
+  props: {
+    info: {
+      type: Object,
+      default: null
+    },
+    education: {
+      type: Object,
+      default: null
+    }
+  },
 
   data() {
     return {
-      ipAddress: null,
-      vtResults: null,
-      loading: false,
-      error: null,
+      showConsole: false,
+      showMap: false,
+      showUni: false,
+      map: null,
+      positions: {
+        console: {},
+        uniContainer: {},
+        mapContainer: {}
+      },
+      dragging: {
+        active: false,
+        element: null,
+        startX: 0,
+        startY: 0,
+        initialX: 0,
+        initialY: 0
+      },
+
       outputBuffer: [],
       displayedLines: [],
       isTyping: false,
-      typingSpeed: 30,
-      lineDelay: 300,
-      latitude: null,
-      longitude: null,
-      showMap: false,
-      map: null,
-    };
+      typingSpeed: 20,
+      lineDelay: 500,
+    }
   },
 
   async mounted() {
-    const cached = localStorage.getItem('vtResults')
-    if (cached) {
-      this.vtResults = JSON.parse(cached)
+    setTimeout(() => {
+      this.showConsole = true;
+      this.queueMessage("Initializing portfolio data...", "system")
+      document.addEventListener('mousemove', this.onDrag);
+      document.addEventListener('mouseup', this.stopDrag);
 
-      if (!this.vtResults.location_coords || this.vtResults.location_coords.length != 2) {
-        localStorage.removeItem('vtResults')
-        this.vtResults = null
-        this.queueMessage("Updating system protocols...", "system")
-        await this.analyzeIP()
-      } else {
-        this.queueAnalysisOutput()
-      }
-    } else {
-      this.queueMessage("Initializing secure connection...", "system")
-      await this.analyzeIP()
-    }
+      this.displayPortfolioData()
+    }, 1000)
+  },
+
+  beforeUnmount() {
+    document.removeEventListener('mousemove', this.onDrag);
+    document.removeEventListener('mouseup', this.stopDrag);
   },
 
   methods: {
 
-    flagUrl(code) {
-      if (!code) return 'https://flagcdn.com/w40/unknown.png';
-      return `https://flagcdn.com/w40/${code.toLowerCase()}.png`;
-    },
-
-    async analyzeIP() {
-      this.loading = true;
-      this.queueMessage("Fetching IP address...", "system")
-
-      try {
-        const ipapiRes = await fetch('https://ipapi.co/json/');
-        if (!ipapiRes.ok) throw new Error('Failed to fetch IP data');
-        const ipData = await ipapiRes.json();
-
-        const ipinfoRes = await fetch(`https://api.ipinfo.io/lite/${ipData.ip}?token=${import.meta.env.VITE_IPINFO_API_KEY}`)
-        if (!ipinfoRes.ok) throw new Error('Failed to fetch IP data');
-        const ipinfoData = await ipinfoRes.json();
-
-        const headers = { 'x-apikey': import.meta.env.VITE_VIRUSTOTAL_API_KEY }
-        const [reportRes, resolutionsRes] = await Promise.all([
-          fetch(`https://www.virustotal.com/api/v3/ip_addresses/${ipData.ip}`, { headers }),
-          fetch(`https://www.virustotal.com/api/v3/ip_addresses/${ipData.ip}/resolutions?limit=10`, { headers })
-        ])
-        console.log(reportRes)
-        if (!reportRes.ok) throw new Error('Error querying VirusTotal Report');
-
-
-        const reportData = await reportRes.json();
-        const attrs = reportData.data.attributes || {};
-        const maliciousResults = {};
-        if (attrs.last_analysis_results) {
-          Object.entries(attrs.last_analysis_results).forEach(([engine, result]) => {
-            if (result.category !== 'undetected') {
-              maliciousResults[engine] = result;
-            }
-          });
-        }
-
-        let processedResolutions = [];
-        if (resolutionsRes.ok) {
-          const resolutionsData = await resolutionsRes.json();
-          if (resolutionsData.data && resolutionsData.data.length > 0) {
-            processedResolutions = resolutionsData.data.map(item => ({
-              id: item.id || null,
-              ip_address_last_analysis_stats: item.attributes?.ip_address_last_analysis_stats || null,
-              resolver: item.attributes?.resolver || null,
-              host_name: item.attributes?.host_name || null
-            }));
-          }
-        }
-
-        this.vtResults = {
-          created_at: new Date().toISOString(),
-          ip_address: ipData.ip,
-          owner: attrs.as_owner || ipinfoData.as_name,
-          domain: ipinfoData.as_domain || null,
-          network: attrs.network || null,
-          regional_internet_registry: attrs.regional_internet_registry || null,
-          country_code: attrs.country ? attrs.country : 'Unknown',
-          location_coords: [ipData.longitude, ipData.latitude],
-          location_trace: `${ipData.city}, ${ipData.country_name}, ${ipinfoData.continent}`,
-          malicious_results: Object.keys(maliciousResults).length > 0 ? maliciousResults : "Engines: Malware Undetected",
-          resolutions: processedResolutions.length > 0 ? processedResolutions : "Not Found"
-        };
-
-        localStorage.setItem('vtResults', JSON.stringify(this.vtResults))
-
-        this.queueAnalysisOutput()
-
-      } catch (err) {
-        this.queueMessage(`ERROR: ${err.message}`, "error")
-        console.error(err)
-      } finally {
-        this.loading = false;
+    startDrag(event, elementKey) {
+      // Solo permitir arrastrar si se hace click en el header/drag-handle
+      if (!event.target.closest('.drag-handle')) {
+        return;
       }
+
+      const element = this.$refs[elementKey];
+      if (!element) return;
+
+      // Prevenir selección de texto
+      event.preventDefault();
+
+      // Obtener posición actual del elemento
+      const rect = element.getBoundingClientRect();
+
+      this.dragging = {
+        active: true,
+        element: elementKey,
+        startX: event.clientX,
+        startY: event.clientY,
+        initialX: rect.left,
+        initialY: rect.top
+      };
+
+      // Agregar clase visual
+      element.classList.add('dragging');
     },
 
-    queueAnalysisOutput() {
-      this.queueMessage("Analysis IP Address: ● ONLINE", "success")
-      this.queueMessage("Receiving initial data from host...", "header")
-      if (this.vtResults) {
-        Object.entries(this.vtResults).forEach(([key, value]) => {
-          if (!value) {
-            this.queueMessage(`${key}: Not Found`, "system")
-          } else {
-            if (key == 'location_coords' && value.length == 2) {
-              this.queueMessage(`Ubication Found: ${value}`, "success")
-              this.queueMessage(`Opening geolocation map`, "warning")
-              this.initMap(value[1], value[0])
+    onDrag(event) {
+      if (!this.dragging.active) return;
+
+      event.preventDefault();
+
+      // Calcular nueva posición
+      const deltaX = event.clientX - this.dragging.startX;
+      const deltaY = event.clientY - this.dragging.startY;
+
+      const newX = this.dragging.initialX + deltaX;
+      const newY = this.dragging.initialY + deltaY;
+
+      // Obtener dimensiones de la ventana y del elemento
+      const element = this.$refs[this.dragging.element];
+      const rect = element.getBoundingClientRect();
+      const maxX = window.innerWidth - rect.width;
+      const maxY = window.innerHeight - rect.height;
+
+      // Limitar posición dentro de la ventana
+      const constrainedX = Math.max(0, Math.min(newX, maxX));
+      const constrainedY = Math.max(0, Math.min(newY, maxY));
+
+      // Actualizar posición
+      this.positions[this.dragging.element] = {
+        position: 'fixed',
+        left: `${constrainedX}px`,
+        top: `${constrainedY}px`,
+        right: 'auto',
+        bottom: 'auto'
+      };
+    },
+
+    stopDrag() {
+      if (this.dragging.active) {
+        const element = this.$refs[this.dragging.element];
+        if (element) {
+          element.classList.remove('dragging');
+        }
+      }
+
+      this.dragging = {
+        active: false,
+        element: null,
+        startX: 0,
+        startY: 0,
+        initialX: 0,
+        initialY: 0
+      };
+    },
+
+    displayPortfolioData() {
+      this.queueMessage("Loading portfolio information...", "header")
+
+      if (this.info && Object.keys(this.info).length > 0) {
+        this.queueMessage("\n=== PERSONAL INFO ===", "success")
+
+        Object.entries(this.info).forEach(([key, value]) => {
+          if (value && typeof value === 'object') {
+            if (key.toLowerCase() === 'linkedin' || key.toLowerCase() === 'github') {
+              this.queueMessageWithLink(key, value.username, value.url);
             } else {
-              this.queueMessage(`${key}: ${value}`, "system")
+              this.queueMessageKeyValue(key, value)
             }
+          } else if (value) {
+            this.queueMessageKeyValue(key, value)
           }
-
         })
-
       }
 
-      this.queueMessage("[EYESPY] Starting intrusive data collection algorithms ", "success")
-      this.processQueue();
+      if (this.education) {
+        this.queueMessage("\n=== EDUCATION ===", "success")
+        this.queueMessageKeyValue("Institution", this.education.institution)
+        this.queueMessageKeyValue("Degree", this.education.degree)
+        this.queueMessageKeyValue("Period", this.education.period)
+        this.queueMessageKeyValue("Status", this.education.status)
+        this.queueMessage("Opening geolocation map...", "warning")
+        setTimeout(() => {
+          this.initMap(-34.57849628176265, -58.526781327105084)
+          setTimeout(() => {
+            this.showUni = true;
+          }, 2000)
+        }, 2000)
+      }
+
+      this.queueMessage("\n[SYSTEM] Portfolio data loaded successfully", "success")
+      this.processQueue()
+    },
+
+
+    queueMessageKeyValue(key, value) {
+      const formattedKey = `<span class="text-cyan">${key}:</span>`
+      const formattedValue = `<span class="text-white">${value}</span>`
+      this.queueMessage(`  ${formattedKey} ${formattedValue}`, "raw")
+    },
+
+    queueMessageWithLink(key, username, url) {
+      const formattedKey = `<span class="text-cyan">${key}:</span>`
+      const link = `<a href="${url}" target="_blank" rel="noopener noreferrer">${username}</a>`
+      this.queueMessage(`  ${formattedKey} ${link}`, "raw")
     },
 
     initMap(lat, lon) {
@@ -211,8 +260,8 @@ export default {
         this.map.on('load', () => {
           this.map.flyTo({
             center: [lon, lat],
-            zoom: 12,
-            speed: 2
+            zoom: 15,
+            speed: 1.5
           });
 
           const el = document.createElement('div');
@@ -228,20 +277,18 @@ export default {
       });
     },
 
-    formatObjectInline(obj) {
-      if (!obj) return 'null'
-      return Object.entries(obj)
-        .map(([k, v]) => `${k}: ${v}`)
-        .join(', ')
-    },
-
     queueMessage(text, type = "info") {
       let formattedText = text
-      if (type === 'error') formattedText = `<span class="text-red">${text}</span>`
-      if (type === 'success') formattedText = `<span class="text-green">${text}</span>`
-      if (type === 'warning') formattedText = `<span class="text-yellow">${text}</span>`
-      if (type === 'header') formattedText = `<span class="text-cyan font-weight-bold">${text}</span>`
-      if (type === 'system') formattedText = `<span class="text-grey">${text}</span>`
+      if (type === 'raw') {
+        formattedText = text
+      } else if (type === 'error') formattedText = `<span class="text-red">${text}</span>`
+      else if (type === 'warning') formattedText = `<span class="text-yellow">${text}</span>`
+      else if (type === 'header') formattedText = `<span class="text-cyan font-weight-bold">${text}</span>`
+      else if (type === 'system') formattedText = `<span class="text-grey">${text}</span>`
+      else if (type === 'success') {
+        this.outputBuffer.push("<span></span>")
+        formattedText = `<span class="text-green">${text}</span>`
+      }
 
       this.outputBuffer.push(formattedText)
 
@@ -290,8 +337,8 @@ export default {
         if (container) container.scrollTop = container.scrollHeight;
       });
     }
-  }
-};
+  },
+}
 </script>
 
 <style scoped>
@@ -321,32 +368,81 @@ export default {
   position: absolute;
   bottom: 1em;
   right: 1em;
+  animation: slideInFromRight 0.8s ease-out;
 }
 
-.country-container {
+.uni-container {
   position: absolute;
   bottom: calc(var(--map-height) + 2em);
   right: 1em;
   background-color: #0c0c0c;
   border: 1px solid #333;
-  border-radius: 8px;
   padding: 8px;
   color: #fff;
   box-shadow: 0 0 20px rgba(var(--v-theme-primary), 0.1);
+}
+
+.uni-container .header {
+  position: absolute;
+  width: 100%;
+  z-index: 1;
+}
+
+.uni-container .campus {
+  max-width: 25vw;
+  height: fit-content;
+}
+
+.uni-container .logo {
+  width: 100px;
+  position: absolute;
+  bottom: 1em;
+  right: 1em;
+  z-index: 1;
+  animation: slideFromCenter 0.8s ease-out;
+}
+
+@keyframes slideFromCenter {
+  from {
+    opacity: 0;
+    transform: translate(-100%, -100%);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate(0, 0);
+  }
+}
+
+.analyzer-console,
+.analyzer-map-container,
+.uni-container {
+  animation: deploy 0.3s ease-out;
+}
+
+@keyframes deploy {
+  from {
+    opacity: 0;
+    transform: scale(0.1);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.gradient {
+  position: absolute;
+  width: calc(100% - 8px);
+  height: calc(100% - 8px);
+  background: radial-gradient(circle at 50% 50%, transparent, #000000c9);
 }
 
 .map-view {
   width: 100%;
   height: 100%;
   border: 1px solid #333;
-}
-
-.map-placeholder {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  position: absolute;
 }
 
 :deep(.map-marker) {
@@ -430,6 +526,20 @@ export default {
 
 .console-line {
   word-wrap: break-word;
+  opacity: 0;
+  animation: fadeInLine 0.3s ease-in forwards;
+}
+
+@keyframes fadeInLine {
+  from {
+    opacity: 0;
+    transform: translateX(-5px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 .prompt {
@@ -452,29 +562,32 @@ export default {
   }
 }
 
-/* Utility classes for coloring created in JS */
-:deep(.text-red) {
-  color: #ff5555;
+.draggable {
+  z-index: 10;
 }
 
-:deep(.text-green) {
-  color: #55ff55;
+.draggable.dragging {
+  cursor: grabbing;
+  z-index: 1000;
+  box-shadow: 0 10px 40px rgba(var(--v-theme-primary), 0.3);
+  transition: none;
 }
 
-:deep(.text-yellow) {
-  color: #ffff55;
+.drag-handle {
+  cursor: grab;
 }
 
-:deep(.text-cyan) {
-  color: #55ffff;
+.drag-handle:active {
+  cursor: grabbing;
 }
 
-:deep(.text-grey) {
-  color: #888888;
+.draggable * {
+  user-select: none;
 }
 
-:deep(.font-weight-bold) {
-  font-weight: bold;
+.console-body {
+  cursor: default !important;
+  user-select: text;
 }
 </style>
 ```

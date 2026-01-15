@@ -37,7 +37,7 @@
 </template>
 
 <script>
-import { ledFont } from './ledFont';
+import { ledFont } from '../data/ledFont';
 
 export default {
   name: 'GitContributions',
@@ -188,14 +188,15 @@ export default {
   font-size: 12px;
   font-family: system-ui;
   padding-bottom: 5px;
-  background: rgb(var(--v-theme-surface));
+  background: #121212c0;
   color: white;
   transition: all 0.3s ease-in-out;
 }
 
 .git-contributions:hover {
-  border: solid 2px #a3ffbb;
-  box-shadow: 0px 0px 20px rgb(var(--v-theme-success));
+  border: solid 2px #ffffff;
+  border-radius: 5px;
+  box-shadow: 0px 0px 20px rgb(var(--v-theme-primary));
   cursor: pointer;
 }
 

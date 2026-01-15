@@ -25,7 +25,7 @@ const myCustomDark = {
 const redTheme = {
   dark: true,
   colors: {
-    background: '#111925ff',
+    background: '#0c111aff',
     surface: '#1a2433ff',
     primary: '#F63049',
     secondary: '#D02752',

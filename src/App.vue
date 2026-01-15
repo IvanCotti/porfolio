@@ -145,11 +145,13 @@ header {
 /* Animations */
 @keyframes ripple {
   from {
-    box-shadow: 0 0 0 0 rgb(var(--v-theme-tertiary));
+    box-shadow: 0 0 0 0 rgb(var(--v-theme-secondary));
+    color: white;
   }
 
   to {
     box-shadow: 0 0 0 22px #63d2ff00;
+    color: rgb(var(--v-theme-primary));
   }
 }
 </style>
