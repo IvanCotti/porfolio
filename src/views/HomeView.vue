@@ -202,6 +202,11 @@ main section:not(.hero) {
 
 /* Overrides Vuetify */
 
+.v-timeline {
+  background: rgb(var(--v-theme-surface));
+  border-radius: 1em;
+}
+
 .v-timeline-divider__dot,
 .v-timeline-item__body {
   transition: all 0.3s ease;
