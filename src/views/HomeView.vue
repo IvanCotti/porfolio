@@ -16,7 +16,7 @@
   <v-divider class="mb-12"></v-divider>
 
   <section class="mb-16 fade-section">
-    <GitContributions class="ma-auto" />
+    <GitContributions class="ma-auto mb-8" />
     <v-card class="pa-6">
       <h3 class="text-h5 font-weight-bold mb-6 text-primary">{{ t.sections.info }}</h3>
       <v-row>
@@ -113,7 +113,7 @@
 </template>
 
 <script>
-import { useAppStore } from '../stores/appStore';
+import { useAppStore } from '../plugins/appStore';
 import SecurityAnalyzer from '../components/SecurityAnalyzer.vue';
 import GitContributions from '../components/GitContributions.vue';
 import CursorAnimated from '../components/CursorAnimated.vue';

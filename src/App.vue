@@ -40,7 +40,7 @@
 </template>
 
 <script>
-import { useAppStore } from './stores/appStore';
+import { useAppStore } from './plugins/appStore';
 
 export default {
   name: "App",
@@ -59,6 +59,7 @@ export default {
 <style>
 :root {
   --header-height: 64px;
+  --map-height: 400px;
 }
 
 @font-face {

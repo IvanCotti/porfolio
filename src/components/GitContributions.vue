@@ -185,8 +185,6 @@ export default {
   height: fit-content;
   padding: 20px 10px;
   border: solid 2px #3d444d;
-  border-top-left-radius: 10px;
-  border-top-right-radius: 10px;
   font-size: 12px;
   font-family: system-ui;
   padding-bottom: 5px;

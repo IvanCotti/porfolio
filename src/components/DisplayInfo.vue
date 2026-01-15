@@ -20,26 +20,14 @@
 
   <v-expand-transition>
     <v-card v-if="showMap" class="country-container">
-      <div>
-        <div class="d-flex align-center ga-3 text-h5">
-          <img :src="flagUrl(vtResults.country_code)" :alt="vtResults.country_code" width="56" height="42" />
-          <div class="d-flex flex-column">
-            <span>{{ vtResults.location_trace }}</span>
-            <span class="text-body-2">{{ vtResults.location_coords[0] }} {{ vtResults.location_coords[1] }}</span>
-          </div>
-        </div>
+      <div class="d-flex align-center ga-3 text-h5">
+        <img :src="flagUrl(vtResults.country_code)" :alt="vtResults.country_code" width="36" height="27" />
+        <span>{{ vtResults.location_trace }}</span>
       </div>
       <v-divider class="my-2" />
       <div class="d-flex align-center ga-3">
-        <span>{{ vtResults.domain }}</span>
-      </div>
-      <div class="d-flex align-center ga-3">
         <span>{{ vtResults.owner }}</span>
-        <span>{{ vtResults.regional_internet_registry }}</span>
-      </div>
-      <div class="d-flex align-center ga-3">
-        <span>{{ vtResults.ip_address }}</span>
-        <span>{{ vtResults.network }}</span>
+        <span>{{ vtResults.domain }}</span>
       </div>
     </v-card>
   </v-expand-transition>
@@ -49,6 +37,9 @@
       <div class="text-end w-100 px-2"> <span class="text-green">●</span> Online</div>
       <div id="map" class="map-view"></div>
     </div>
+    <div v-else class="map-placeholder">
+      <div class="text-end w-100"> <span class="text-red">●</span> Offline</div>
+    </div>
   </v-expand-transition>
 
 </template>
@@ -56,7 +47,6 @@
 <script>
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
-import { analyzeIP } from '@/services/ipAnalysisService';
 
 export default {
   name: "SecurityAnalyzer",
@@ -109,16 +99,71 @@ export default {
 
     async analyzeIP() {
       this.loading = true;
-      this.queueMessage("Fetching IP address...", "system");
+      this.queueMessage("Fetching IP address...", "system")
 
       try {
-        this.vtResults = await analyzeIP();
-        localStorage.setItem('vtResults', JSON.stringify(this.vtResults));
-        this.queueAnalysisOutput();
+        const ipapiRes = await fetch('https://ipapi.co/json/');
+        if (!ipapiRes.ok) throw new Error('Failed to fetch IP data');
+        const ipData = await ipapiRes.json();
+
+        const ipinfoRes = await fetch(`https://api.ipinfo.io/lite/${ipData.ip}?token=${import.meta.env.VITE_IPINFO_API_KEY}`)
+        if (!ipinfoRes.ok) throw new Error('Failed to fetch IP data');
+        const ipinfoData = await ipinfoRes.json();
+
+        const headers = { 'x-apikey': import.meta.env.VITE_VIRUSTOTAL_API_KEY }
+        const [reportRes, resolutionsRes] = await Promise.all([
+          fetch(`https://www.virustotal.com/api/v3/ip_addresses/${ipData.ip}`, { headers }),
+          fetch(`https://www.virustotal.com/api/v3/ip_addresses/${ipData.ip}/resolutions?limit=10`, { headers })
+        ])
+        console.log(reportRes)
+        if (!reportRes.ok) throw new Error('Error querying VirusTotal Report');
+
+
+        const reportData = await reportRes.json();
+        const attrs = reportData.data.attributes || {};
+        const maliciousResults = {};
+        if (attrs.last_analysis_results) {
+          Object.entries(attrs.last_analysis_results).forEach(([engine, result]) => {
+            if (result.category !== 'undetected') {
+              maliciousResults[engine] = result;
+            }
+          });
+        }
+
+        let processedResolutions = [];
+        if (resolutionsRes.ok) {
+          const resolutionsData = await resolutionsRes.json();
+          if (resolutionsData.data && resolutionsData.data.length > 0) {
+            processedResolutions = resolutionsData.data.map(item => ({
+              id: item.id || null,
+              ip_address_last_analysis_stats: item.attributes?.ip_address_last_analysis_stats || null,
+              resolver: item.attributes?.resolver || null,
+              host_name: item.attributes?.host_name || null
+            }));
+          }
+        }
+
+        this.vtResults = {
+          created_at: new Date().toISOString(),
+          ip_address: ipData.ip,
+          owner: attrs.as_owner || ipinfoData.as_name,
+          domain: ipinfoData.as_domain || null,
+          network: attrs.network || null,
+          regional_internet_registry: attrs.regional_internet_registry || null,
+          country_code: attrs.country ? attrs.country : 'Unknown',
+          location_coords: [ipData.longitude, ipData.latitude],
+          location_trace: `${ipData.city}, ${ipData.country_name}, ${ipinfoData.continent}`,
+          malicious_results: Object.keys(maliciousResults).length > 0 ? maliciousResults : "Engines: Malware Undetected",
+          resolutions: processedResolutions.length > 0 ? processedResolutions : "Not Found"
+        };
+
+        localStorage.setItem('vtResults', JSON.stringify(this.vtResults))
+
+        this.queueAnalysisOutput()
 
       } catch (err) {
-        this.queueMessage(`ERROR: ${err.message}`, "error");
-        console.error('IP Analysis Error:', err);
+        this.queueMessage(`ERROR: ${err.message}`, "error")
+        console.error(err)
       } finally {
         this.loading = false;
       }
